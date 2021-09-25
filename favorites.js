@@ -1,5 +1,5 @@
-import fs from "fs";
-import { config } from "./utils.js";
+import fs from 'fs';
+import { config } from './utils/utils';
 
 /* FAVORITES */
 
@@ -11,28 +11,26 @@ function addFavorite(username) {
       users: [...config().users, username],
     },
     null,
-    2
+    2,
   );
-  fs.writeFileSync("config.json", updated, {
-    encoding: "utf-8",
+  fs.writeFileSync('config.json', updated, {
+    encoding: 'utf-8',
   });
 }
 
 // remove user from 'favorites'
 function removeFavorite(username) {
-  const users = config().users.filter(function (item) {
-    return item !== username;
-  });
+  const users = config().users.filter((item) => item !== username);
   const updated = JSON.stringify(
     {
       ...config(),
       users,
     },
     null,
-    2
+    2,
   );
-  fs.writeFileSync("config.json", updated, {
-    encoding: "utf-8",
+  fs.writeFileSync('config.json', updated, {
+    encoding: 'utf-8',
   });
 }
 
@@ -42,8 +40,8 @@ function removeAllFavorites() {
     ...config(),
     users: [],
   });
-  fs.writeFileSync("config.json", updated, {
-    encoding: "utf-8",
+  fs.writeFileSync('config.json', updated, {
+    encoding: 'utf-8',
   });
 }
 

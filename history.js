@@ -1,5 +1,5 @@
-import fs from "fs";
-import { config } from "./utils.js";
+import fs from 'fs';
+import { config } from './utils/utils';
 
 function saveHistory(username) {
   const updated = JSON.stringify(
@@ -8,10 +8,10 @@ function saveHistory(username) {
       history: [...config().history, username],
     },
     null,
-    2
+    2,
   );
-  fs.writeFileSync("config.json", updated, {
-    encoding: "utf-8",
+  fs.writeFileSync('config.json', updated, {
+    encoding: 'utf-8',
   });
 }
 
@@ -22,10 +22,10 @@ function clearHistory() {
       history: [],
     },
     null,
-    2
+    2,
   );
-  fs.writeFileSync("config.json", updated, {
-    encoding: "utf-8",
+  fs.writeFileSync('config.json', updated, {
+    encoding: 'utf-8',
   });
 }
 
