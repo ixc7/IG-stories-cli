@@ -1,10 +1,10 @@
 import inquirer from 'inquirer'
-import { search } from './search.js'
-import { getDir, checkDirExists, openDir, removeDir } from './directories.js'
-import { config, checkRepeat, checkConfirm } from './utils.js'
-import { removeFavorite, removeAllFavorites } from './favorites.js'
-import { clearHistory } from './history.js'
-import { getAPIKey, clearAPIKey } from './apiKeys.js'
+import { search } from '../actions/search.js'
+import { getDir, checkDirExists, openDir, removeDir } from '../actions/directories.js'
+import { config, checkRepeat, checkConfirm } from '../actions/utils.js'
+import { removeFavorite, removeAllFavorites } from '../actions/favorites.js'
+import { clearHistory } from '../actions/history.js'
+import { getAPIKey, clearAPIKey } from '../actions/apiKeys.js'
 
 /* MAIN MENU */
 
