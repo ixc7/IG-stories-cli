@@ -1,13 +1,13 @@
-import fs from "fs";
-import inquirer from "inquirer";
-import { config } from "./utils.js";
+import fs from 'fs'
+import inquirer from 'inquirer'
+import { config } from './utils.js'
 
 /* API KEYS */
 
 // get/set API key
-async function getAPIKey(
+async function getAPIKey (
   options = {
-    replace: false,
+    replace: false
   }
 ) {
   const newAPIKey =
@@ -16,45 +16,45 @@ async function getAPIKey(
       : (
           await inquirer.prompt([
             {
-              type: "input",
-              name: "APIKey",
-              message: "rapidAPI key",
-              validate(input) {
-                if (typeof input === "string" && !!input) return true;
-                return "value cannot be empty";
-              },
-            },
+              type: 'input',
+              name: 'APIKey',
+              message: 'rapidAPI key',
+              validate (input) {
+                if (typeof input === 'string' && !!input) return true
+                return 'value cannot be empty'
+              }
+            }
           ])
-        ).APIKey;
+        ).APIKey
 
   const updated = JSON.stringify(
     {
       ...config(),
-      APIKey: newAPIKey,
+      APIKey: newAPIKey
     },
     null,
     2
-  );
-  fs.writeFileSync("config.json", updated, {
-    encoding: "utf-8",
-  });
+  )
+  fs.writeFileSync('config.json', updated, {
+    encoding: 'utf-8'
+  })
 
-  return newAPIKey;
+  return newAPIKey
 }
 
 // unset API key
-function clearAPIKey() {
+function clearAPIKey () {
   const updated = JSON.stringify(
     {
       ...config(),
-      APIKey: "",
+      APIKey: ''
     },
     null,
     2
-  );
-  fs.writeFileSync("config.json", updated, {
-    encoding: "utf-8",
-  });
+  )
+  fs.writeFileSync('config.json', updated, {
+    encoding: 'utf-8'
+  })
 }
 
-export { getAPIKey, clearAPIKey };
+export { getAPIKey, clearAPIKey }

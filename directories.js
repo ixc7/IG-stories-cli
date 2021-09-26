@@ -1,84 +1,85 @@
-import fs from "fs";
-import path from "path";
-import inquirer from "inquirer";
-import { execSync } from "child_process";
-import { config, __dirname } from "./utils.js";
+import fs from 'fs'
+import path from 'path'
+import inquirer from 'inquirer'
+import { execSync } from 'child_process'
+import { config, __dirname } from './utils.js'
 
 /* FILESYSTEM */
 
 // where to save files
-async function getDir(
+async function getDir (
   username,
   options = {
-    replace: false,
+    replace: false
   }
 ) {
-  async function setDir() {
+  async function setDir () {
     const input = await inquirer.prompt([
       {
-        type: "input",
-        name: "destination",
-        message: "path",
-        default: path.resolve(__dirname, "downloads"),
-        validate(input) {
-          if (typeof input === "string" && !!input) return true;
-          return "value cannot be empty";
-        },
-      },
-    ]);
+        type: 'input',
+        name: 'destination',
+        message: 'path',
+        default: path.resolve(__dirname, 'downloads'),
+        validate (input) {
+          if (typeof input === 'string' && !!input) return true
+          return 'value cannot be empty'
+        }
+      }
+    ])
 
     fs.writeFileSync(
-      "config.json",
+      'config.json',
       JSON.stringify({
         ...config(),
-        destination: input.destination,
+        destination: input.destination
       }),
       {
-        encoding: "utf-8",
+        encoding: 'utf-8'
       },
       2
-    );
+    )
 
-    return input.destination;
+    return input.destination
   }
 
-  let basePath;
+  let basePath
 
   if (config().destination && !options.replace) {
-    basePath = config().destination;
+    basePath = config().destination
   } else {
-    basePath = await setDir();
+    basePath = await setDir()
   }
 
   if (!options.replace) {
-    return path.resolve(basePath, username);
+    return path.resolve(basePath, username)
   }
 }
 
-function checkDirExists(location) {
+function checkDirExists (location) {
   if (!fs.existsSync(location) || !fs.readdirSync(location).length) {
-    return false;
+    return false
   }
-  return true;
+  return true
 }
 
-function upsertDir(location) {
-  if (!fs.existsSync(location))
+function upsertDir (location) {
+  if (!fs.existsSync(location)) {
     fs.mkdirSync(location, {
-      recursive: true,
-    });
+      recursive: true
+    })
+  }
 }
 
-function openDir(location) {
-  execSync(`open ${location}`);
+function openDir (location) {
+  execSync(`open ${location}`)
 }
 
 // delete files
-function removeDir(location) {
+function removeDir (location) {
   fs.readdirSync(location).forEach(function (file) {
-    fs.rmSync(path.resolve(location, file));
-  });
-  fs.rmdirSync(location);
+    fs.rmSync(path.resolve(location, file))
+  })
+  fs.rmdirSync(location)
 }
 
-export { getDir, openDir, removeDir, upsertDir, checkDirExists };
+export { getDir, openDir, removeDir, upsertDir, checkDirExists }

@@ -1,94 +1,94 @@
-import fs from "fs";
-import path from "path";
-import axios from "axios";
-import inquirer from "inquirer";
+import fs from 'fs'
+import path from 'path'
+import axios from 'axios'
+import inquirer from 'inquirer'
 
 // __dirname polyfill
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const __dirname = path.dirname(new URL(import.meta.url).pathname)
 
 // clear ENTIRE scrollback
-function clearScrollBack() {
-  process.stdout.write("\u001b[3J\u001b[1J");
-  console.clear();
+function clearScrollBack () {
+  process.stdout.write('\u001b[3J\u001b[1J')
+  console.clear()
 }
 
 // get config file
-function config() {
+function config () {
   return JSON.parse(
-    fs.readFileSync("config.json", {
-      encoding: "utf-8",
+    fs.readFileSync('config.json', {
+      encoding: 'utf-8'
     })
-  );
+  )
 }
 
 // download from url
-async function download(url, extension, directory) {
-  const baseName = path.basename(url);
+async function download (url, extension, directory) {
+  const baseName = path.basename(url)
   const fileName = `${baseName
     .substring(0, 10)
-    .replace(/\./g, " ")}.${extension}`;
-  const filePath = path.resolve(directory, fileName);
+    .replace(/\./g, ' ')}.${extension}`
+  const filePath = path.resolve(directory, fileName)
   const response = await axios({
-    method: "GET",
+    method: 'GET',
     url,
-    responseType: "stream",
-  });
-  return response.data.pipe(fs.createWriteStream(filePath));
+    responseType: 'stream'
+  })
+  return response.data.pipe(fs.createWriteStream(filePath))
 }
 
 // download from array of urls
-async function downloadAll(
+async function downloadAll (
   urls,
   destination,
   options = {
-    console: false,
+    console: false
   }
 ) {
   urls.forEach(async function (item, index) {
     if (options.console) {
-      console.log(`downloading item ${index + 1} of ${urls.length}`);
+      console.log(`downloading item ${index + 1} of ${urls.length}`)
     }
-    await download(item.url, item.type, destination);
-  });
-  console.log("download complete");
+    await download(item.url, item.type, destination)
+  })
+  console.log('download complete')
 }
 
 /* INQUIRER METHODS  */
 
-async function repeatPrompt(message = " ") {
+async function repeatPrompt (message = ' ') {
   return (
     await inquirer.prompt([
       {
-        type: "confirm",
-        name: "repeat",
-        message,
-      },
+        type: 'confirm',
+        name: 'repeat',
+        message
+      }
     ])
-  ).repeat;
+  ).repeat
 }
 
-async function checkRepeat(
+async function checkRepeat (
   prompt,
   callback = async function () {},
-  message = "do more?"
+  message = 'do more?'
 ) {
   if (await repeatPrompt(message)) {
-    await prompt();
+    await prompt()
   } else {
-    await callback();
+    await callback()
   }
 }
 
-async function checkConfirm(message = "proceed?") {
+async function checkConfirm (message = 'proceed?') {
   return (
     await inquirer.prompt([
       {
-        type: "confirm",
-        name: "checkConfirm",
-        message,
-      },
+        type: 'confirm',
+        name: 'checkConfirm',
+        message
+      }
     ])
-  ).checkConfirm;
+  ).checkConfirm
 }
 
 export {
@@ -98,5 +98,5 @@ export {
   download,
   downloadAll,
   checkRepeat,
-  checkConfirm,
-};
+  checkConfirm
+}

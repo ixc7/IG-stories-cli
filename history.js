@@ -1,32 +1,32 @@
-import fs from "fs";
-import { config } from "./utils.js";
+import fs from 'fs'
+import { config } from './utils.js'
 
-function saveHistory(username) {
+function saveHistory (username) {
   const updated = JSON.stringify(
     {
       ...config(),
-      history: [...config().history, username],
+      history: [...config().history, username]
     },
     null,
     2
-  );
-  fs.writeFileSync("config.json", updated, {
-    encoding: "utf-8",
-  });
+  )
+  fs.writeFileSync('config.json', updated, {
+    encoding: 'utf-8'
+  })
 }
 
-function clearHistory() {
+function clearHistory () {
   const updated = JSON.stringify(
     {
       ...config(),
-      history: [],
+      history: []
     },
     null,
     2
-  );
-  fs.writeFileSync("config.json", updated, {
-    encoding: "utf-8",
-  });
+  )
+  fs.writeFileSync('config.json', updated, {
+    encoding: 'utf-8'
+  })
 }
 
-export { saveHistory, clearHistory };
+export { saveHistory, clearHistory }

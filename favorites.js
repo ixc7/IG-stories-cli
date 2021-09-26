@@ -1,50 +1,50 @@
-import fs from "fs";
-import { config } from "./utils.js";
+import fs from 'fs'
+import { config } from './utils.js'
 
 /* FAVORITES */
 
 // add user to 'favorites'
-function addFavorite(username) {
+function addFavorite (username) {
   const updated = JSON.stringify(
     {
       ...config(),
-      users: [...config().users, username],
+      users: [...config().users, username]
     },
     null,
     2
-  );
-  fs.writeFileSync("config.json", updated, {
-    encoding: "utf-8",
-  });
+  )
+  fs.writeFileSync('config.json', updated, {
+    encoding: 'utf-8'
+  })
 }
 
 // remove user from 'favorites'
-function removeFavorite(username) {
+function removeFavorite (username) {
   const users = config().users.filter(function (item) {
-    return item !== username;
-  });
+    return item !== username
+  })
   const updated = JSON.stringify(
     {
       ...config(),
-      users,
+      users
     },
     null,
     2
-  );
-  fs.writeFileSync("config.json", updated, {
-    encoding: "utf-8",
-  });
+  )
+  fs.writeFileSync('config.json', updated, {
+    encoding: 'utf-8'
+  })
 }
 
 // remove all users from 'favorites'
-function removeAllFavorites() {
+function removeAllFavorites () {
   const updated = JSON.stringify({
     ...config(),
-    users: [],
-  });
-  fs.writeFileSync("config.json", updated, {
-    encoding: "utf-8",
-  });
+    users: []
+  })
+  fs.writeFileSync('config.json', updated, {
+    encoding: 'utf-8'
+  })
 }
 
-export { addFavorite, removeFavorite, removeAllFavorites };
+export { addFavorite, removeFavorite, removeAllFavorites }
