@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import inquirer from 'inquirer';
 import { execSync } from 'child_process';
-import { config, __dirname } from '../utils/utils';
+import { config, __dirname } from '../utils/utils.js';
 
 /* FILESYSTEM */
 

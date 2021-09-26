@@ -1,20 +1,19 @@
+/* eslint-disable brace-style */
 /* eslint-disable no-console */
-// import fs from 'fs'
-// import path from 'path'
 import readline from 'readline';
 import { execSync } from 'child_process';
 import axios from 'axios';
 import inquirer from 'inquirer';
-import { getDir, upsertDir } from './directory-actions';
-import { config, downloadAll, clearScrollBack } from '../utils/utils';
-import timg from '../utils/timg';
-import { addFavorite } from './favorites-actions';
-import { saveHistory } from './history-actions';
-import { getAPIKey } from '../utils/api-keys';
+import { getDir, upsertDir } from './directory-actions.js';
+import { config, downloadAll, clearScrollBack } from '../utils/utils.js';
+import timg from '../utils/timg.js';
+import { addFavorite } from './favorites-actions.js';
+import { saveHistory } from './history-actions.js';
+import { getAPIKey } from '../utils/api-keys.js';
 
 /* SEARCH */
 
-async function search(user) {
+export default async function search(user) {
   // get username
   const username = user || (
     await inquirer.prompt([
@@ -29,6 +28,22 @@ async function search(user) {
       },
     ])
   ).username;
+
+  // const username = !!user
+  //   ? user
+  //   : (
+  //       await inquirer.prompt([
+  //         {
+  //           type: "input",
+  //           name: "username",
+  //           message: "instagram username",
+  //           validate(input) {
+  //             if (typeof input === "string" && !!input) return true;
+  //             return "value cannot be empty";
+  //           },
+  //         },
+  //       ])
+  //     ).username;
 
   // get directory
   const destination = await getDir(username);
@@ -87,7 +102,7 @@ async function search(user) {
         `\nloading story ${i + 1} of ${urls.length} (${urls[i].display})`,
       );
       readline.cursorTo(process.stdout, 0, 4);
-      process.stdout.write(timg(urls[i].url).stdout);
+      process.stdout.write(await (timg(urls[i].url).stdout));
       readline.cursorTo(process.stdout, 0, process.stdout.rows);
       // eslint-disable-next-line no-await-in-loop
       const confirmDownload = await inquirer.prompt([
@@ -150,5 +165,3 @@ async function search(user) {
     console.log('nothing found');
   }
 }
-
-export default search;

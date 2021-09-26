@@ -2,11 +2,11 @@
 import inquirer from 'inquirer';
 import {
   getDir, checkDirExists, openDir, removeDir,
-} from '../directories';
-import { config } from '../utils/utils';
-import { checkRepeat } from '../utils/inquirer-utils';
-import search from '../search';
-import mainMenu from './main-menu';
+} from '../actions/directory-actions.js';
+import { config } from '../utils/utils.js';
+import { checkRepeat } from '../utils/inquirer-utils.js';
+import search from '../actions/search-actions.js';
+import mainMenu from './main-menu.js';
 
 export default async function historyMenu() {
   if (config().history.length) {

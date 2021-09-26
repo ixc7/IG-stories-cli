@@ -1,13 +1,13 @@
 /* eslint-disable no-console */
 import inquirer from 'inquirer';
-import search from '../search';
+import search from '../actions/search-actions.js';
 import {
   getDir, checkDirExists, openDir, removeDir,
-} from '../directories';
+} from '../actions/directory-actions.js';
 import { config } from '../utils/utils';
 import { checkRepeat } from '../utils/inquirer-utils';
-import { removeFavorite } from '../favorites';
-import mainMenu from './main-menu';
+import { removeFavorite } from '../actions/favorites-actions.js';
+import mainMenu from './main-menu.js';
 
 export default async function favoritesMenu() {
   if (config().users.length) {

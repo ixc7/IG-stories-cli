@@ -35,20 +35,22 @@ async function mainMenu() {
 
   const submenuMap = {
     async newSearch() {
-      await import('../search').default();
+      const menu = '../actions/search-actions.js';
+      await (await import(menu)).default();
+      // await (import('../actions/search-actions.js')).default();
       await mainMenu();
     },
     async favoritesMenu() {
-      const menu = './favorites-menu';
-      await import(menu).default();
+      const menu = './favorites-menu.js';
+      await (await import(menu)).default();
     },
     async historyMenu() {
-      const menu = './history-menu';
-      await import(menu).default();
+      const menu = './history-menu.js';
+      await (await import(menu)).default();
     },
     async configMenu() {
-      const menu = './config-menu';
-      await import(menu).default();
+      const menu = './config-menu.js';
+      await (await import(menu)).default();
     },
     exit() {
       // eslint-disable-next-line no-console

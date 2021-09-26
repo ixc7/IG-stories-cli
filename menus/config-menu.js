@@ -1,9 +1,9 @@
 import inquirer from 'inquirer';
-import { checkRepeat, checkConfirm } from '../utils/inquirer-utils';
-import { getAPIKey, clearAPIKey } from '../apiKeys';
-import { clearHistory } from '../history';
-import { removeAllFavorites } from '../favorites';
-import { getDir } from '../directories';
+import { checkRepeat, checkConfirm } from '../utils/inquirer-utils.js';
+import { getAPIKey, clearAPIKey } from '../utils/api-keys.js';
+import { clearHistory } from '../actions/history-actions.js';
+import { removeAllFavorites } from '../actions/favorites-actions.js';
+import { getDir } from '../actions/directory-actions.js';
 
 async function configMenu() {
   const { selection } = await inquirer.prompt([
