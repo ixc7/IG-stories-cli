@@ -1,10 +1,10 @@
 import inquirer from 'inquirer'
-import { checkConfirm, checkRepeat } from '../actions/utils.js'
-import { getAPIKey, clearAPIKey } from '../actions/apiKeys.js'
+import { checkConfirm, checkRepeat } from '../actions/inquirer-actions.js'
+import { getAPIKey, clearAPIKey } from '../actions/keys.js'
 import { removeAllFavorites } from '../actions/favorites.js'
 import { clearHistory } from '../actions/history.js'
 import { getDir } from '../actions/directories.js'
-import { mainMenu } from './menus.js'
+import mainMenu from './main-menu.js'
 
 export default async function configMenu () {
   const selection = (

@@ -1,18 +1,17 @@
 import fs from 'fs'
 import path from 'path'
 import axios from 'axios'
-import inquirer from 'inquirer'
 
 // __dirname polyfill
 const __dirname = path.dirname(new URL(import.meta.url).pathname)
 
-// clear ENTIRE scrollback
+// clear scrollback
 function clearScrollBack () {
   process.stdout.write('\u001b[3J\u001b[1J')
   console.clear()
 }
 
-// get config file
+// read config file
 function config () {
   return JSON.parse(
     fs.readFileSync('config.json', {
@@ -53,50 +52,10 @@ async function downloadAll (
   console.log('download complete')
 }
 
-/* INQUIRER METHODS  */
-
-async function repeatPrompt (message = ' ') {
-  return (
-    await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'repeat',
-        message
-      }
-    ])
-  ).repeat
-}
-
-async function checkRepeat (
-  prompt,
-  callback = async function () {},
-  message = 'do more?'
-) {
-  if (await repeatPrompt(message)) {
-    await prompt()
-  } else {
-    await callback()
-  }
-}
-
-async function checkConfirm (message = 'proceed?') {
-  return (
-    await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'checkConfirm',
-        message
-      }
-    ])
-  ).checkConfirm
-}
-
 export {
   config,
   __dirname,
   clearScrollBack,
   download,
-  downloadAll,
-  checkRepeat,
-  checkConfirm
+  downloadAll
 }

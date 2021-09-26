@@ -1,17 +1,12 @@
 import inquirer from 'inquirer'
 import { search } from '../actions/search.js'
-// import { getDir, checkDirExists, openDir, removeDir } from '../actions/directories.js'
-// import { config, checkRepeat, checkConfirm } from '../actions/utils.js'
-// import { removeFavorite, removeAllFavorites } from '../actions/favorites.js'
-// import { clearHistory } from '../actions/history.js'
-// import { getAPIKey, clearAPIKey } from '../actions/apiKeys.js'
-import favoritesMenu from './favorites.js'
-import historyMenu from './history.js'
-import configMenu from './config.js'
+import favoritesMenu from './favorites-menu.js'
+import historyMenu from './history-menu.js'
+import configMenu from './config-menu.js'
 
 /* MAIN MENU */
 
-async function mainMenu () {
+export default async function mainMenu () {
   const answers = await inquirer.prompt([
     {
       type: 'list',
@@ -57,14 +52,5 @@ async function mainMenu () {
 
   await submenuMap[answers.submenu]()
 }
-
-/* FAVORITES */
-
-/* HISTORY */
-
-/* CONFIG */
-
-/* INIT */
-// mainMenu()
 
 export { mainMenu }

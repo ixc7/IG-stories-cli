@@ -7,10 +7,10 @@ import axios from 'axios'
 import inquirer from 'inquirer'
 import { getDir, upsertDir } from './directories.js'
 import { config, downloadAll, clearScrollBack } from './utils.js'
-import { showMedia } from './images.js'
+import { showMedia } from './media.js'
 import { addFavorite } from './favorites.js'
 import { saveHistory } from './history.js'
-import { getAPIKey } from './apiKeys.js'
+import { getAPIKey } from './keys.js'
 
 /* SEARCH */
 
@@ -120,7 +120,7 @@ async function search (user) {
           {
             type: 'confirm',
             name: 'save',
-            message (response) {
+            message () {
               return `add '${username}?' to saved?`
             },
             when () {
