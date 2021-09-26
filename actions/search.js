@@ -5,16 +5,16 @@ import readline from 'readline'
 import { execSync } from 'child_process'
 import axios from 'axios'
 import inquirer from 'inquirer'
-import { getDir, upsertDir } from './directories.js'
+import { getSetDir, upsertDir } from './directories.js'
 import { config, downloadAll, clearScrollBack } from './utils.js'
-import { showMedia } from './media.js'
+import showMedia from './media.js'
 import { addFavorite } from './favorites.js'
-import { saveHistory } from './history.js'
-import { getAPIKey } from './keys.js'
+import { setHistory } from './history.js'
+import { getSetKey } from './keys.js'
 
 /* SEARCH */
 
-async function search (user) {
+export default async function search (user) {
   // get username
   const username = user || (
     await inquirer.prompt([
@@ -31,7 +31,7 @@ async function search (user) {
   ).username
 
   // get directory
-  const destination = await getDir(username)
+  const destination = await getSetDir({ username })
 
   // get data from API
   console.log('fetching data from API')
@@ -44,7 +44,7 @@ async function search (user) {
     },
     headers: {
       'x-rapidapi-host': 'instagram-bulk-profile-scrapper.p.rapidapi.com',
-      'x-rapidapi-key': await getAPIKey()
+      'x-rapidapi-key': await getSetKey()
     }
   })
 
@@ -88,7 +88,14 @@ async function search (user) {
         `\nloading story ${i + 1} of ${urls.length} (${urls[i].display})`
       )
       readline.cursorTo(process.stdout, 0, 4)
+
+      /*
+        showMedia calls timg,
+        timg downloads url,
+        then renders to stdout.
+      */
       process.stdout.write(showMedia(urls[i].url).stdout)
+
       readline.cursorTo(process.stdout, 0, process.stdout.rows)
       const confirmDownload = await inquirer.prompt([
         {
@@ -112,7 +119,7 @@ async function search (user) {
       })
 
       // add to history
-      saveHistory(username)
+      setHistory(username)
 
       // save username y/n
       const confirmSave = (
@@ -139,7 +146,7 @@ async function search (user) {
       execSync(`open ${destination}`)
     }
 
-    // if user selected NOTHING AT ALL...
+    // if user selected NOTHING AT ALL to save...
     else {
       console.log('nothing selected')
     }
@@ -150,5 +157,3 @@ async function search (user) {
     console.log('nothing found')
   }
 }
-
-export { search }

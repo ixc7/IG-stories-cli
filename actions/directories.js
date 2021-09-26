@@ -7,10 +7,10 @@ import { config, __dirname } from './utils.js'
 /* FILESYSTEM */
 
 // where to save files
-async function getDir (
-  username,
+async function getSetDir (
   options = {
-    replace: false
+    username: null,
+    set: false
   }
 ) {
   async function setDir () {
@@ -44,14 +44,14 @@ async function getDir (
 
   let basePath
 
-  if (config().destination && !options.replace) {
+  if (config().destination && !options.set) {
     basePath = config().destination
   } else {
     basePath = await setDir()
   }
 
-  if (!options.replace) {
-    return path.resolve(basePath, username)
+  if (!options.set) {
+    return path.resolve(basePath, options.username)
   }
 }
 
@@ -82,4 +82,4 @@ function removeDir (location) {
   fs.rmdirSync(location)
 }
 
-export { getDir, openDir, removeDir, upsertDir, checkDirExists }
+export { getSetDir, openDir, removeDir, upsertDir, checkDirExists }

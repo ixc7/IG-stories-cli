@@ -1,8 +1,8 @@
 import inquirer from 'inquirer'
 import { config } from '../actions/utils.js'
 import { checkRepeat } from '../actions/inquirer-actions.js'
-import { search } from '../actions/search.js'
-import { getDir, openDir, removeDir, checkDirExists } from '../actions/directories.js'
+import search from '../actions/search.js'
+import { getSetDir, openDir, removeDir, checkDirExists } from '../actions/directories.js'
 import mainMenu from './main-menu.js'
 
 export default async function historyMenu () {
@@ -41,14 +41,14 @@ export default async function historyMenu () {
     if (answers.action === 'getStories') {
       await search(username)
     } else if (answers.action === 'getDownloads') {
-      const location = await getDir(username)
+      const location = await getSetDir({ username })
       if (checkDirExists(location)) {
         openDir(location)
       } else {
         console.log('no downloads found')
       }
     } else if (answers.action === 'removeDownloads') {
-      const location = await getDir(username)
+      const location = await getSetDir({ username })
       if (checkDirExists(location)) {
         removeDir(location)
       } else {

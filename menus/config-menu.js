@@ -1,9 +1,9 @@
 import inquirer from 'inquirer'
 import { checkConfirm, checkRepeat } from '../actions/inquirer-actions.js'
-import { getAPIKey, clearAPIKey } from '../actions/keys.js'
+import { getSetKey, unsetKey } from '../actions/keys.js'
 import { removeAllFavorites } from '../actions/favorites.js'
-import { clearHistory } from '../actions/history.js'
-import { getDir } from '../actions/directories.js'
+import { unsetHistory } from '../actions/history.js'
+import { getSetDir } from '../actions/directories.js'
 import mainMenu from './main-menu.js'
 
 export default async function configMenu () {
@@ -15,11 +15,11 @@ export default async function configMenu () {
         message: 'select a field to edit',
         choices: [
           {
-            value: 'APIKey',
+            value: 'setKey',
             name: 'edit API Key' // edit/reset
           },
           {
-            value: 'destination',
+            value: 'setDir',
             name: 'edit destination folder' // edit/reset
           },
           {
@@ -36,24 +36,24 @@ export default async function configMenu () {
   ).selection
 
   const actions = {
-    async APIKey () {
+    async setKey () {
       if (await checkConfirm()) {
-        clearAPIKey()
-        await getAPIKey({
-          replace: true
+        unsetKey()
+        await getSetKey({
+          set: true
         })
       }
     },
-    async destination () {
+    async setDir () {
       if (await checkConfirm()) {
-        await getDir(null, {
-          replace: true
+        await getSetDir({
+          set: true
         })
       }
     },
     async history () {
       if (await checkConfirm()) {
-        clearHistory()
+        unsetHistory()
       }
     },
     async saved () {

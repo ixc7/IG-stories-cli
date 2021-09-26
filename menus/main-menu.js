@@ -1,10 +1,8 @@
 import inquirer from 'inquirer'
-import { search } from '../actions/search.js'
+import search from '../actions/search.js'
 import favoritesMenu from './favorites-menu.js'
 import historyMenu from './history-menu.js'
 import configMenu from './config-menu.js'
-
-/* MAIN MENU */
 
 export default async function mainMenu () {
   const answers = await inquirer.prompt([
@@ -37,7 +35,7 @@ export default async function mainMenu () {
     }
   ])
 
-  const submenuMap = {
+  const actions = {
     async newSearch () {
       await search()
       await mainMenu()
@@ -50,7 +48,7 @@ export default async function mainMenu () {
     }
   }
 
-  await submenuMap[answers.submenu]()
+  await actions[answers.submenu]()
 }
 
 export { mainMenu }

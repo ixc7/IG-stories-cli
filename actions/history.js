@@ -1,7 +1,7 @@
 import fs from 'fs'
 import { config } from './utils.js'
 
-function saveHistory (username) {
+function setHistory (username) {
   const updated = JSON.stringify(
     {
       ...config(),
@@ -15,7 +15,7 @@ function saveHistory (username) {
   })
 }
 
-function clearHistory () {
+function unsetHistory () {
   const updated = JSON.stringify(
     {
       ...config(),
@@ -29,4 +29,4 @@ function clearHistory () {
   })
 }
 
-export { saveHistory, clearHistory }
+export { setHistory, unsetHistory }

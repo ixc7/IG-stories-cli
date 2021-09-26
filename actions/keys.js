@@ -5,13 +5,13 @@ import { config } from './utils.js'
 /* API KEYS */
 
 // get/set API key
-async function getAPIKey (
+async function getSetKey (
   options = {
-    replace: false
+    set: false
   }
 ) {
-  const newAPIKey =
-    config().APIKey && !options.replace
+  const newKey =
+    config().APIKey && !options.set
       ? config().APIKey
       : (
           await inquirer.prompt([
@@ -30,7 +30,7 @@ async function getAPIKey (
   const updated = JSON.stringify(
     {
       ...config(),
-      APIKey: newAPIKey
+      APIKey: newKey
     },
     null,
     2
@@ -39,11 +39,11 @@ async function getAPIKey (
     encoding: 'utf-8'
   })
 
-  return newAPIKey
+  return newKey
 }
 
 // unset API key
-function clearAPIKey () {
+function unsetKey () {
   const updated = JSON.stringify(
     {
       ...config(),
@@ -57,4 +57,4 @@ function clearAPIKey () {
   })
 }
 
-export { getAPIKey, clearAPIKey }
+export { getSetKey, unsetKey }
