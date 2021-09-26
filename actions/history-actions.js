@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { config } from './utils/utils';
+import { config } from '../utils/utils';
 
 function saveHistory(username) {
   const updated = JSON.stringify(

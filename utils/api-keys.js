@@ -1,6 +1,6 @@
 import fs from 'fs';
 import inquirer from 'inquirer';
-import { config } from './utils/utils';
+import { config } from './utils';
 
 /* API KEYS */
 

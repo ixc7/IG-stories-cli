@@ -5,12 +5,12 @@ import readline from 'readline';
 import { execSync } from 'child_process';
 import axios from 'axios';
 import inquirer from 'inquirer';
-import { getDir, upsertDir } from './directories';
-import { config, downloadAll, clearScrollBack } from './utils/utils';
-import showMedia from './images';
-import { addFavorite } from './favorites';
-import { saveHistory } from './history';
-import { getAPIKey } from './apiKeys';
+import { getDir, upsertDir } from './directory-actions';
+import { config, downloadAll, clearScrollBack } from '../utils/utils';
+import timg from '../utils/timg';
+import { addFavorite } from './favorites-actions';
+import { saveHistory } from './history-actions';
+import { getAPIKey } from '../utils/api-keys';
 
 /* SEARCH */
 
@@ -87,7 +87,7 @@ async function search(user) {
         `\nloading story ${i + 1} of ${urls.length} (${urls[i].display})`,
       );
       readline.cursorTo(process.stdout, 0, 4);
-      process.stdout.write(showMedia(urls[i].url).stdout);
+      process.stdout.write(timg(urls[i].url).stdout);
       readline.cursorTo(process.stdout, 0, process.stdout.rows);
       // eslint-disable-next-line no-await-in-loop
       const confirmDownload = await inquirer.prompt([
