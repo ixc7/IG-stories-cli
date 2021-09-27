@@ -1,10 +1,8 @@
 /* eslint-disable brace-style */
-// import fs from 'fs'
-// import path from 'path'
+import inquirer from 'inquirer'
 import readline from 'readline'
 import { execSync } from 'child_process'
 import axios from 'axios'
-import inquirer from 'inquirer'
 import { getSetDir, upsertDir } from './directories.js'
 import { config, downloadAll, clearScrollBack } from './utils.js'
 import showMedia from './media.js'
@@ -94,6 +92,7 @@ export default async function search (user) {
         timg downloads url,
         then renders to stdout.
       */
+
       process.stdout.write(showMedia(urls[i].url).stdout)
 
       readline.cursorTo(process.stdout, 0, process.stdout.rows)
