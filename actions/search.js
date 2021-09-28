@@ -5,7 +5,7 @@ import { execSync } from 'child_process'
 import axios from 'axios'
 import { getSetDir, upsertDir } from './directories.js'
 import { config, downloadAll, clearScrollBack } from './utils.js'
-import showMedia from './media.js'
+import showMedia from './showMedia.js'
 import { addFavorite } from './favorites.js'
 import { setHistory } from './history.js'
 import { getSetKey } from './keys.js'
@@ -76,7 +76,7 @@ export default async function search (user) {
     // mkdir
     upsertDir(destination)
 
-    // choose stories to download
+    // iterate and choose stories to download
     const urlsToSave = []
     for (let i = 0; i < urls.length; i++) {
       clearScrollBack()
@@ -91,8 +91,8 @@ export default async function search (user) {
         showMedia calls timg,
         timg downloads url,
         then renders to stdout.
+        TODO: add a keypress listener + conditional flag to skip rendering.
       */
-
       process.stdout.write(showMedia(urls[i].url).stdout)
 
       readline.cursorTo(process.stdout, 0, process.stdout.rows)
@@ -108,6 +108,7 @@ export default async function search (user) {
       }
     }
 
+    // done iterating through stories. clear screen.
     clearScrollBack()
 
     // if user selected anything to download...
