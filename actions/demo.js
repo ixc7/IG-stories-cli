@@ -1,32 +1,44 @@
-import { exec } from 'child_process'
+// import { spawn, exec } from 'child_process'
+import { spawn, spawnSync } from 'child_process'
+import { clearScrollBack } from './utils.js'
+import readline from 'readline'
 
-/*
-import path from 'path'
-import { spawnSync } from 'child_process'
-import { __dirname } from './utils.js'
+// https://stackoverflow.com/questions/22337446/how-to-wait-for-a-child-process-to-finish-in-node-js
 
-export default function showMedia (url) {
-  return spawnSync(path.resolve(__dirname, '../vendor/timg'), [
-    `-g ${process.stdout.columns}x${process.stdout.rows - 10}`,
-    '--compress',
-    url
-  ])
-}
-*/
+clearScrollBack()
+const rows = process.stdout.rows
+const cols = process.stdout.columns
 
-const child = exec('timg file_example_MP4_640_3MG.mp4 -g100x100 -V --loops=-1', 'tput reset')
+// const child = exec('timg file_example_MP4_640_3MG.mp4 -g100x100 -V --loops=-1')
+const child = spawn(
+  'timg',
+  [
+    `-g${cols}x${rows - 1}`,
+    '--loops=-1',
+    'file_example_MP4_640_3MG.mp4'
+  ]
+)
 
-child.stdout.removeAllListeners("data")
-child.stderr.removeAllListeners("data")
+// child.stdout.removeAllListeners('data')
+// readline.emitKeyPressEvents(true)
 child.stdout.pipe(process.stdout)
-child.stderr.pipe(process.stderr)
 
 
-
-// var child = require('child_process').exec('python celulas.py')
-// child.stdout.pipe(process.stdout)
-// child.stderr.pipe(process.stdout)
-// child.on('exit', function () {
-  // // process.exit()
-  // console.log('WE ARE DONE.')
+// const rl = readline.createInterface({
+  // input: process.stdin,
+  // output: process.stdout
 // })
+
+// rl.input.on('keypress', function (str, key) {
+  // if (str === 's') {
+    // child.kill()
+    // spawn('tput', ['reset'])
+    // process.exit(0)
+  // }
+// })
+
+process.on('SIGINT', () => {
+  child.kill()
+  spawnSync('tput', ['reset'])
+  process.exit(0)
+})

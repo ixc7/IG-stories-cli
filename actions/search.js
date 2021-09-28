@@ -1,14 +1,15 @@
 /* eslint-disable brace-style */
+import path from 'path'
+import { execSync, spawn } from 'child_process'
 import inquirer from 'inquirer'
 import readline from 'readline'
-import { execSync } from 'child_process'
 import axios from 'axios'
+import { __dirname, config, downloadAll, clearScrollBack } from './utils.js'
 import { getSetDir, upsertDir } from './directories.js'
-import { config, downloadAll, clearScrollBack } from './utils.js'
-import showMedia from './showMedia.js'
 import { addFavorite } from './favorites.js'
 import { setHistory } from './history.js'
 import { getSetKey } from './keys.js'
+// import showMedia from './showMedia.js'
 
 /* SEARCH */
 
@@ -75,9 +76,11 @@ export default async function search (user) {
 
     // mkdir
     upsertDir(destination)
+    const urlsToSave = []
+    const cols = process.stdout.columns
+    const rows = (process.stdout.rows - 1)
 
     // iterate and choose stories to download
-    const urlsToSave = []
     for (let i = 0; i < urls.length; i++) {
       clearScrollBack()
       console.log(
@@ -85,17 +88,46 @@ export default async function search (user) {
         `and ${count.video} ${count.video === 1 ? 'video' : 'videos'}`,
         `\nloading story ${i + 1} of ${urls.length} (${urls[i].display})`
       )
-      readline.cursorTo(process.stdout, 0, 4)
+      // readline.cursorTo(process.stdout, 0, 4)
 
       /*
         showMedia calls timg,
         timg downloads url,
         then renders to stdout.
-        TODO: add a keypress listener + conditional flag to skip rendering.
+        TODO: FINISH adding a keypress listener
+              + conditional flag to skip rendering.
       */
-      process.stdout.write(showMedia(urls[i].url).stdout)
 
-      readline.cursorTo(process.stdout, 0, process.stdout.rows)
+      // process.stdout.write(showMedia(urls[i].url).stdout)
+      // const preview = showMedia(urls[i].url)
+
+
+      const preview = spawn(
+        path.resolve(__dirname, '../vendor/timg'),
+        [
+          `-g ${cols}x${rows}`,
+          // '--center',
+          urls[i].url
+        ]
+        // ,
+        // {
+          // stdio: ['ignore', 'pipe', 'ignore']
+        // }
+      )
+
+      preview.stdout.pipe(process.stdout)
+        
+      preview.on('close', function (code, signal) {
+        if (urls[i].display === 'video') {
+          clearScrollBack()
+        }
+      })
+
+      // preview.on('close', function () {
+      // readline.cursorTo(process.stdout, 0, process.stdout.rows)
+      // })
+
+      // readline.cursorTo(process.stdout, 0, process.stdout.rows)
       const confirmDownload = await inquirer.prompt([
         {
           type: 'confirm',
@@ -103,9 +135,14 @@ export default async function search (user) {
           message: `save ${i + 1}?`
         }
       ])
+
       if (confirmDownload.save) {
         urlsToSave.push(urls[i])
       }
+
+      preview.kill('SIGINT')
+      // clearScrollBack()
+      // process.kill(preview.pid)
     }
 
     // done iterating through stories. clear screen.
