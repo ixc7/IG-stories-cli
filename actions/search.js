@@ -1,4 +1,5 @@
-/* eslint-disable brace-style */
+/* eslint-disable */
+
 import path from 'path'
 import { execSync, spawn } from 'child_process'
 import inquirer from 'inquirer'
@@ -12,6 +13,12 @@ import { getSetKey } from './keys.js'
 // import showMedia from './showMedia.js'
 
 /* SEARCH */
+
+// see: https://stackoverflow.com/a/38317377
+
+console.log(`AAAAHHHHH hahahahaha ${4 + 4}`)
+
+// TODO: everything
 
 export default async function search (user) {
   // get username
@@ -78,56 +85,80 @@ export default async function search (user) {
     upsertDir(destination)
     const urlsToSave = []
     const cols = process.stdout.columns
-    const rows = (process.stdout.rows - 1)
+    const rows = process.stdout.rows
 
-    // iterate and choose stories to download
-    for (let i = 0; i < urls.length; i++) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+    // for (let i = 0; i < urls.length; i++) {
+    ///// START OF FOR LOOP
+
+      /*
       clearScrollBack()
       console.log(
         `found ${count.photo} ${count.photo === 1 ? 'photo' : 'photos'}`,
         `and ${count.video} ${count.video === 1 ? 'video' : 'videos'}`,
         `\nloading story ${i + 1} of ${urls.length} (${urls[i].display})`
       )
-      // readline.cursorTo(process.stdout, 0, 4)
-
-      /*
-        showMedia calls timg,
-        timg downloads url,
-        then renders to stdout.
-        TODO: FINISH adding a keypress listener
-              + conditional flag to skip rendering.
       */
 
-      // process.stdout.write(showMedia(urls[i].url).stdout)
-      // const preview = showMedia(urls[i].url)
+      
+      // readline.cursorTo(process.stdout, 0, 4)
 
+      
 
       const preview = spawn(
         path.resolve(__dirname, '../vendor/timg'),
         [
-          `-g ${cols}x${rows}`,
-          // '--center',
+          `-g ${cols - 10}x${rows - 10}`,
+          '--center',
           urls[i].url
         ]
-        // ,
-        // {
-          // stdio: ['ignore', 'pipe', 'ignore']
-        // }
       )
 
-      preview.stdout.pipe(process.stdout)
-        
       preview.on('close', function (code, signal) {
-        if (urls[i].display === 'video') {
+      // readline.cursorTo(process.stdout, 0, 0) // MOVE CURSOR TO TOP
+      // readline.cursorTo(process.stdout, 0, 4) // MOVE CURSOR TO TOP + 4
+      // readline.cursorTo(process.stdout, 0, process.stdout.rows) // MOVE CURSOR TO BOTTOM
+        // if (urls[i].display === 'video') {
+          readline.cursorTo(process.stdout, 0, 0)
           clearScrollBack()
-        }
+        // }
       })
 
+      preview.stdout.pipe(process.stdout)
+      
+      
+      // preview.stdin.removeAllListeners("data")
+      // preview.stderr.removeAllListeners("data")
       // preview.on('close', function () {
       // readline.cursorTo(process.stdout, 0, process.stdout.rows)
       // })
-
       // readline.cursorTo(process.stdout, 0, process.stdout.rows)
+
+
+
+      // inquirer is fucking the video up
+      // the video runs and stops and clears the screen on end
+      // every time you type a letter into the prompt it just makes new lines of itself across the screen
+      // and only the video part in the middle re renders
+      // ... idk maybe just use readline
+
+      /*
       const confirmDownload = await inquirer.prompt([
         {
           type: 'confirm',
@@ -139,11 +170,33 @@ export default async function search (user) {
       if (confirmDownload.save) {
         urlsToSave.push(urls[i])
       }
+      */
 
-      preview.kill('SIGINT')
+      // preview.kill('SIGINT')
       // clearScrollBack()
-      // process.kill(preview.pid)
-    }
+
+
+
+
+
+
+
+
+    ///// END OF FOR LOOP
+    // }
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
 
     // done iterating through stories. clear screen.
     clearScrollBack()

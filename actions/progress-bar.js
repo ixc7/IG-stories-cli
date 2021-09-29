@@ -12,7 +12,6 @@ const destination = fs.createWriteStream(fileName)
 
 // TODO: nest entire function inside search() for loop.
 //       there has to be a cleaner way to do this lol.
-
 // request file
 
 const req = https.request({

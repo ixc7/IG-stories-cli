@@ -14,7 +14,7 @@ function clearScrollBack () {
 // read config file
 function config () {
   return JSON.parse(
-    fs.readFileSync('config.json', {
+    fs.readFileSync('../config.json', {
       encoding: 'utf-8'
     })
   )
