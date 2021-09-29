@@ -80,7 +80,8 @@ function showPreview (int, max, data) {
     [
       `-g ${cols - 10}x${rows - 10}`,
       '--center',
-      data[int].url
+      data[int].url,
+      data[int].type === 'jpg' ? '-w 7' : ''
     ]
   )
 
