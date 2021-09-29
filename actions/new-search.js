@@ -15,19 +15,16 @@ import { getSetKey } from './keys.js'
   https://stackoverflow.com/a/38317377
 */
 
-async function search () {
+async function getStories () {
 
   const count = {
     photo: 0,
     video: 0
   }
   const filesToSave = []
-  const cols = process.stdout.columns
-  const rows = process.stdout.rows
+
   const username = 'alice'
   const destination = await getSetDir({ username })
-
-
 
   const fetched = await axios.request({
     method: 'GET',
@@ -41,8 +38,6 @@ async function search () {
       'x-rapidapi-key': await getSetKey()
     }
   })
-
-
 
   const files = fetched.data[0].story.data.map(function (item) {
     if (item.media_type === 1) {
@@ -62,30 +57,50 @@ async function search () {
     }
   })
 
-
   upsertDir(destination)
+  return files
+  // return showPreview(0, files.length)
+  // showPreview(0, files.length, files)
+}
 
+
+// function showPreview (int = 0, max = 1, data = []) {
+function showPreview (int, max, data) {  
+  console.log(`rendering ${int + 1} of ${max}`)
+  const cols = process.stdout.columns
+  const rows = process.stdout.rows
+  
+  if (int === max) {
+    console.log('done')
+    process.exit(0)
+  }
 
   const preview = spawn(
     path.resolve(__dirname, '../vendor/timg'),
     [
-    `-g ${cols - 10}x${rows - 10}`,
-    '--center',
-    files[0].url
+      `-g ${cols - 10}x${rows - 10}`,
+      '--center',
+      data[int].url
     ]
   )
-
 
   preview.on('close', function (code, signal) {
     readline.cursorTo(process.stdout, 0, 0)
     clearScrollBack()
+    showPreview((int + 1), max, data)
   })
-
-
+  
   preview.stdout.pipe(process.stdout)  
-
 }
 
 
-search()
+// getStories()
+
+(async function() {
+  console.log('fetching data...')
+  const stories = await getStories()
+  console.log('success...')
+  showPreview(0, (stories.length - 1), stories)
+  // const
+})()
 
