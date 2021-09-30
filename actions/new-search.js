@@ -2,7 +2,7 @@
 
 import path from 'path'
 import readline from 'readline'
-import { spawn } from 'child_process'
+import { spawn, execSync } from 'child_process'
 import inquirer from 'inquirer'
 import axios from 'axios'
 import { __dirname, config, downloadAll, clearScrollBack } from './utils.js'
@@ -10,14 +10,11 @@ import { getSetDir, upsertDir } from './directories.js'
 import { addFavorite } from './favorites.js'
 import { setHistory } from './history.js'
 import { getSetKey } from './keys.js'
-import ansi from '../vendor/ansi-escapes.mjs'
-
 
 function goto (x, y, after = () => {}) {
   clearScrollBack()
   readline.cursorTo(process.stdout, x, y, after)
 }
-
 
 async function getStories () {
   const username = 'alice'
@@ -65,64 +62,56 @@ async function getStories () {
 
 
 function showPreview (int = 0, max = 1, data = []) {
+  const msg = `${int + 1} of ${max} (y: save, n: skip, q: quit)`
+  const cols = process.stdout.columns
+  const rows = process.stdout.rows
+  const center= Math.floor((cols / 2) - (msg.length / 2))
 
-  
-  // const rl = readline.createInterface(process.stdin)
-  readline.emitKeypressEvents(process.stdin)
-  process.stdin.setRawMode(true)
-  process.stdin.on('keypress', function (str, key) {
-    // clearScrollBack()
-    // console.clear()
-    // goto(0, 0)
-    // if (str === 's') process.exit(1)
-    // process.stdout.write('\x1b[D')
-    // readline.moveCursor(process.stdout, -1, 0)
-    // readline.cursorTo(process.stdout, 0, process.stdout.rows)
-  })
-  
   if (int === max) {
     console.log('done')
     process.exit(0)
   }
 
-  
-  const msg = `rendering ${int + 1} of ${max}`
-  const cols = process.stdout.columns
-  const rows = process.stdout.rows
-  const center= Math.floor((cols / 2) - (msg.length / 2))
-
   goto(center, 0, function () {
     process.stdin.write(`${msg}\n`)
   })
-  
+
   const preview = spawn(
     path.resolve(__dirname, '../vendor/timg'),
     [
-      // `-g ${cols}x${rows - 2}`,
-      // '--center',
-      `-g 60x${rows - 2}`,
+      `-g ${cols}x${rows - 2}`,
+      '--center',
       data[int].url,
-      data[int].type === 'jpg' ? '-w 7' : ''
-    ],
-    {
-      // in, out, err | 0, 1, 2
-      stdio: ['ignore', 'pipe', 'ignore']
-    }
+      data[int].type === 'jpg' ? '-w 1' : ''
+    ]
   )
 
   preview.on('close', function (code, signal) {
     goto(0, 0)
+    process.stdin.removeListener('keypress', function() {})
     showPreview((int + 1), max, data)
   })
-  
+
   preview.stdout.pipe(process.stdout)
+  readline.emitKeypressEvents(process.stdin)
+  process.stdin.setRawMode(true)
+  
+  process.stdin.once('keypress', function (str) {
+    if (str === 'y') {
+      // do something here...
+      preview.kill()
+    } else if (str === 'n') {
+      preview.kill()
+    } else if (str === 'q') {
+      process.exit(1)
+    }
+  })
 }
 
-
 async function init () {
+  goto(0, 0)
   console.log('fetching data...')
   const stories = await getStories()
-  console.log('success...')
   showPreview(0, (stories.length - 1), stories)
 }
 
