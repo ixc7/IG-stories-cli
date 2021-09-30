@@ -1,9 +1,9 @@
 /* eslint-disable */
 
 import path from 'path'
-import { execSync, spawn } from 'child_process'
-import inquirer from 'inquirer'
 import readline from 'readline'
+import { spawn } from 'child_process'
+import inquirer from 'inquirer'
 import axios from 'axios'
 import { __dirname, config, downloadAll, clearScrollBack } from './utils.js'
 import { getSetDir, upsertDir } from './directories.js'
@@ -11,20 +11,19 @@ import { addFavorite } from './favorites.js'
 import { setHistory } from './history.js'
 import { getSetKey } from './keys.js'
 
-/*
-  https://stackoverflow.com/a/38317377
-*/
+function goto (x, y, after = () => {}) {
+  clearScrollBack()
+  readline.cursorTo(process.stdout, x, y, after)
+}
 
 async function getStories () {
-
+  const username = 'alice'
+  const destination = await getSetDir({ username })
+  const filesToSave = []
   const count = {
     photo: 0,
     video: 0
   }
-  const filesToSave = []
-
-  const username = 'alice'
-  const destination = await getSetDir({ username })
 
   const fetched = await axios.request({
     method: 'GET',
@@ -59,26 +58,32 @@ async function getStories () {
 
   upsertDir(destination)
   return files
-  // return showPreview(0, files.length)
-  // showPreview(0, files.length, files)
 }
 
 
-// function showPreview (int = 0, max = 1, data = []) {
-function showPreview (int, max, data) {  
-  console.log(`rendering ${int + 1} of ${max}`)
-  const cols = process.stdout.columns
-  const rows = process.stdout.rows
+function showPreview (int = 0, max = 1, data = []) {
   
   if (int === max) {
     console.log('done')
     process.exit(0)
   }
 
+  // goto(0, 0)
+  // console.log(`rendering ${int + 1} of ${max}`)
+  
+  const msg = `rendering ${int + 1} of ${max}`
+  const cols = process.stdout.columns
+  const rows = process.stdout.rows
+  const center= Math.floor((cols / 2) - (msg.length / 2))
+
+  goto(center, 0, function () {
+    process.stdin.write(`${msg}\n`)
+  })
+  
   const preview = spawn(
     path.resolve(__dirname, '../vendor/timg'),
     [
-      `-g ${cols - 10}x${rows - 10}`,
+      `-g ${cols}x${rows - 2}`,
       '--center',
       data[int].url,
       data[int].type === 'jpg' ? '-w 7' : ''
@@ -86,22 +91,29 @@ function showPreview (int, max, data) {
   )
 
   preview.on('close', function (code, signal) {
-    readline.cursorTo(process.stdout, 0, 0)
-    clearScrollBack()
+    goto(0, 0)
     showPreview((int + 1), max, data)
   })
   
-  preview.stdout.pipe(process.stdout)  
+  preview.stdout.pipe(process.stdout)
 }
 
 
-// getStories()
-
 (async function() {
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+})
+
+rl.input.on('keypress', function () {
+  // readline.cursorTo(process.stdout, 0, process.stdout.rows)
+  readline.cursorTo(process.stdout, 0, 2)
+})
+
   console.log('fetching data...')
   const stories = await getStories()
   console.log('success...')
   showPreview(0, (stories.length - 1), stories)
-  // const
 })()
 
