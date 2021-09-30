@@ -10,11 +10,14 @@ import { getSetDir, upsertDir } from './directories.js'
 import { addFavorite } from './favorites.js'
 import { setHistory } from './history.js'
 import { getSetKey } from './keys.js'
+import ansi from '../vendor/ansi-escapes.mjs'
+
 
 function goto (x, y, after = () => {}) {
   clearScrollBack()
   readline.cursorTo(process.stdout, x, y, after)
 }
+
 
 async function getStories () {
   const username = 'alice'
@@ -62,14 +65,26 @@ async function getStories () {
 
 
 function showPreview (int = 0, max = 1, data = []) {
+
+  
+  // const rl = readline.createInterface(process.stdin)
+  readline.emitKeypressEvents(process.stdin)
+  process.stdin.setRawMode(true)
+  process.stdin.on('keypress', function (str, key) {
+    // clearScrollBack()
+    // console.clear()
+    // goto(0, 0)
+    // if (str === 's') process.exit(1)
+    // process.stdout.write('\x1b[D')
+    // readline.moveCursor(process.stdout, -1, 0)
+    // readline.cursorTo(process.stdout, 0, process.stdout.rows)
+  })
   
   if (int === max) {
     console.log('done')
     process.exit(0)
   }
 
-  // goto(0, 0)
-  // console.log(`rendering ${int + 1} of ${max}`)
   
   const msg = `rendering ${int + 1} of ${max}`
   const cols = process.stdout.columns
@@ -83,12 +98,16 @@ function showPreview (int = 0, max = 1, data = []) {
   const preview = spawn(
     path.resolve(__dirname, '../vendor/timg'),
     [
-      `-g ${cols}x${rows - 2}`,
-      '--center',
-      '-pq',
+      // `-g ${cols}x${rows - 2}`,
+      // '--center',
+      `-g 60x${rows - 2}`,
       data[int].url,
       data[int].type === 'jpg' ? '-w 7' : ''
-    ]
+    ],
+    {
+      // in, out, err | 0, 1, 2
+      stdio: ['ignore', 'pipe', 'ignore']
+    }
   )
 
   preview.on('close', function (code, signal) {
@@ -100,22 +119,12 @@ function showPreview (int = 0, max = 1, data = []) {
 }
 
 
-(async function() {
-
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-})
-
-rl.input.on('keypress', function () {
-  // readline.cursorTo(process.stdout, 0, process.stdout.rows)
-  console.clear()
-  readline.cursorTo(process.stdout, 0, 0)
-})
-
+async function init () {
   console.log('fetching data...')
   const stories = await getStories()
   console.log('success...')
   showPreview(0, (stories.length - 1), stories)
-})()
+}
+
+init()
 

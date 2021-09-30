@@ -10,7 +10,6 @@ import { getSetDir, upsertDir } from './directories.js'
 import { addFavorite } from './favorites.js'
 import { setHistory } from './history.js'
 import { getSetKey } from './keys.js'
-// import showMedia from './showMedia.js'
 
 /* SEARCH */
 
