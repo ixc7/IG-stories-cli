@@ -2,14 +2,11 @@
 
 import path from 'path'
 import readline from 'readline'
-import { spawn, execSync } from 'child_process'
-import inquirer from 'inquirer'
+import { spawn } from 'child_process'
 import axios from 'axios'
-import { __dirname, config, downloadAll, clearScrollBack } from './utils.js'
-import { getSetDir, upsertDir } from './directories.js'
-import { addFavorite } from './favorites.js'
-import { setHistory } from './history.js'
 import { getSetKey } from './keys.js'
+import { getSetDir, upsertDir } from './directories.js'
+import { __dirname, clearScrollBack } from './utils.js'
 
 function goto (x = process.stdout.columns, y = 0) {
   clearScrollBack()
@@ -87,31 +84,27 @@ function showMedia (int = 0, max = 1, data = []) {
     ]
   )
 
-  preview.on('close', async function (code, signal) {
-  
-    process.stdin.removeAllListeners('keypress')
-    
-    if (gotKeypress === true) {
+  preview.stdout.pipe(process.stdout)
 
+  preview.on('close', async function (code, signal) {
+    process.stdin.removeAllListeners('keypress')
+    if (gotKeypress === true) {
       goto(0, 0)
       showMedia((int + 1), max, data)
-      
     } else {
-    
-        process.stdin.on('keypress', function (str) {
-          if (str === 'y') {
-            goto(0, 0)
-            process.stdin.removeAllListeners('keypress')
-            showMedia((int + 1), max, data)
-          } else if (str === 'n') {
-            goto(0, 0)
-            process.stdin.removeAllListeners('keypress')
-            showMedia((int + 1), max, data)
-          } else if (str === 'q') {
-            process.exit(1)
-          }
-      })
-      
+      process.stdin.on('keypress', function (str) {
+        if (str === 'y') {
+          goto(0, 0)
+          process.stdin.removeAllListeners('keypress')
+          showMedia((int + 1), max, data)
+        } else if (str === 'n') {
+          goto(0, 0)
+          process.stdin.removeAllListeners('keypress')
+          showMedia((int + 1), max, data)
+        } else if (str === 'q') {
+          process.exit(1)
+        }
+      })    
     }
   })
 
@@ -125,8 +118,6 @@ function showMedia (int = 0, max = 1, data = []) {
       process.exit(1)
     }
   })
-
-  preview.stdout.pipe(process.stdout)
 }
 
 async function init () {
