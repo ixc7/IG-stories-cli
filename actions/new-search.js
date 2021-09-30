@@ -85,6 +85,7 @@ function showPreview (int = 0, max = 1, data = []) {
     [
       `-g ${cols}x${rows - 2}`,
       '--center',
+      '-pq',
       data[int].url,
       data[int].type === 'jpg' ? '-w 7' : ''
     ]
@@ -108,7 +109,8 @@ const rl = readline.createInterface({
 
 rl.input.on('keypress', function () {
   // readline.cursorTo(process.stdout, 0, process.stdout.rows)
-  readline.cursorTo(process.stdout, 0, 2)
+  console.clear()
+  readline.cursorTo(process.stdout, 0, 0)
 })
 
   console.log('fetching data...')
