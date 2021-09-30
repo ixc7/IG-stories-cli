@@ -11,14 +11,6 @@ import { addFavorite } from './favorites.js'
 import { setHistory } from './history.js'
 import { getSetKey } from './keys.js'
 
-/* SEARCH */
-
-// see: https://stackoverflow.com/a/38317377
-
-console.log(`AAAAHHHHH hahahahaha ${4 + 4}`)
-
-// TODO: everything
-
 export default async function search (user) {
   // get username
   const username = user || (

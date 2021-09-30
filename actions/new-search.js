@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 import path from 'path'
 import readline from 'readline'
 import { spawn } from 'child_process'
@@ -13,15 +11,14 @@ function goto (x = process.stdout.columns, y = 0) {
   readline.cursorTo(process.stdout, x, y)
 }
 
-function centerText (x = process.stdout.columns, y = 0, msg = 'msg') { 
+function centerText (x = process.stdout.columns, y = 0, msg = 'msg') {
   goto(Math.floor((x / 2) - (msg.length / 2)), y)
   process.stdin.write(`${msg}\n`)
 }
 
-async function getMedia () {
-  const username = 'alice'
+async function getMedia (username = 'alice') {
   const destination = await getSetDir({ username })
-  const filesToSave = []
+
   const count = {
     photo: 0,
     video: 0
@@ -40,26 +37,32 @@ async function getMedia () {
     }
   })
 
-  const files = fetched.data[0].story.data.map(function (item) {
-    if (item.media_type === 1) {
-      count.photo += 1
-      return {
-        url: item.image_versions2.candidates[0].url,
-        type: 'jpg',
-        display: 'image'
+  if (fetched?.data[0]?.story?.data && fetched.data[0].story.data.length) {
+    // eslint-disable-next-line array-callback-return
+    const files = fetched.data[0].story.data.map(function (item) {
+      if (item.media_type === 1) {
+        count.photo += 1
+        return {
+          url: item.image_versions2.candidates[0].url,
+          type: 'jpg',
+          display: 'image'
+        }
+      } else if (item.media_type === 2) {
+        count.video += 1
+        return {
+          url: item.video_versions[0].url,
+          type: 'mp4',
+          display: 'video'
+        }
       }
-    } else if (item.media_type === 2) {
-      count.video += 1
-      return {
-        url: item.video_versions[0].url,
-        type: 'mp4',
-        display: 'video'
-      }
-    }
-  })
-  
-  upsertDir(destination)
-  return files
+    })
+
+    upsertDir(destination)
+    return files
+  }
+
+  centerText(process.stdout.columns, 0, 'nothing found')
+  process.exit(0)
 }
 
 function showMedia (int = 0, max = 1, data = []) {
@@ -67,7 +70,7 @@ function showMedia (int = 0, max = 1, data = []) {
     console.log('done')
     process.exit(0)
   }
-  
+
   centerText(process.stdout.columns, 0, `preview ${int + 1} of ${max}`)
   readline.emitKeypressEvents(process.stdin)
   process.stdin.setRawMode(true)
@@ -86,7 +89,7 @@ function showMedia (int = 0, max = 1, data = []) {
 
   preview.stdout.pipe(process.stdout)
 
-  preview.on('close', async function (code, signal) {
+  preview.on('close', async function () {
     process.stdin.removeAllListeners('keypress')
     if (gotKeypress === true) {
       goto(0, 0)
@@ -104,7 +107,7 @@ function showMedia (int = 0, max = 1, data = []) {
         } else if (str === 'q') {
           process.exit(1)
         }
-      })    
+      })
     }
   })
 
@@ -120,15 +123,10 @@ function showMedia (int = 0, max = 1, data = []) {
   })
 }
 
-async function init () {
-  centerText(process.stdout.columns, 0, `'y' = save, 'n' = skip, 'q' = quit`)
-  const stories = await getMedia()
+async function init (username = 'alice') {
+  centerText(process.stdout.columns, 0, '\'y\' = save, \'n\' = skip, \'q\' = quit')
+  const stories = await getMedia(username)
   showMedia(0, (stories.length - 1), stories)
 }
 
-init()
-
-
-
-
-
+init('johncena')
