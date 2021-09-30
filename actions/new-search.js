@@ -11,12 +11,17 @@ import { addFavorite } from './favorites.js'
 import { setHistory } from './history.js'
 import { getSetKey } from './keys.js'
 
-function goto (x, y, after = () => {}) {
+function goto (x = process.stdout.columns, y = 0) {
   clearScrollBack()
-  readline.cursorTo(process.stdout, x, y, after)
+  readline.cursorTo(process.stdout, x, y)
 }
 
-async function getStories () {
+function centerText (x = process.stdout.columns, y = 0, msg = 'msg') { 
+  goto(Math.floor((x / 2) - (msg.length / 2)), y)
+  process.stdin.write(`${msg}\n`)
+}
+
+async function getMedia () {
   const username = 'alice'
   const destination = await getSetDir({ username })
   const filesToSave = []
@@ -55,50 +60,64 @@ async function getStories () {
       }
     }
   })
-
+  
   upsertDir(destination)
   return files
 }
 
-
-function showPreview (int = 0, max = 1, data = []) {
-  const msg = `${int + 1} of ${max} (y: save, n: skip, q: quit)`
-  const cols = process.stdout.columns
-  const rows = process.stdout.rows
-  const center= Math.floor((cols / 2) - (msg.length / 2))
-
+function showMedia (int = 0, max = 1, data = []) {
   if (int === max) {
     console.log('done')
     process.exit(0)
   }
+  
+  centerText(process.stdout.columns, 0, `preview ${int + 1} of ${max}`)
+  readline.emitKeypressEvents(process.stdin)
+  process.stdin.setRawMode(true)
 
-  goto(center, 0, function () {
-    process.stdin.write(`${msg}\n`)
-  })
+  let gotKeypress = false
 
   const preview = spawn(
     path.resolve(__dirname, '../vendor/timg'),
     [
-      `-g ${cols}x${rows - 2}`,
+      `-g ${process.stdout.columns}x${process.stdout.rows - 4}`,
       '--center',
       data[int].url,
-      data[int].type === 'jpg' ? '-w 1' : ''
+      data[int].type === 'jpg' ? '-w 5' : ''
     ]
   )
 
-  preview.on('close', function (code, signal) {
-    goto(0, 0)
-    process.stdin.removeListener('keypress', function() {})
-    showPreview((int + 1), max, data)
+  preview.on('close', async function (code, signal) {
+  
+    process.stdin.removeAllListeners('keypress')
+    
+    if (gotKeypress === true) {
+
+      goto(0, 0)
+      showMedia((int + 1), max, data)
+      
+    } else {
+    
+        process.stdin.on('keypress', function (str) {
+          if (str === 'y') {
+            goto(0, 0)
+            process.stdin.removeAllListeners('keypress')
+            showMedia((int + 1), max, data)
+          } else if (str === 'n') {
+            goto(0, 0)
+            process.stdin.removeAllListeners('keypress')
+            showMedia((int + 1), max, data)
+          } else if (str === 'q') {
+            process.exit(1)
+          }
+      })
+      
+    }
   })
 
-  preview.stdout.pipe(process.stdout)
-  readline.emitKeypressEvents(process.stdin)
-  process.stdin.setRawMode(true)
-  
-  process.stdin.once('keypress', function (str) {
+  process.stdin.on('keypress', function (str) {
+    gotKeypress = true
     if (str === 'y') {
-      // do something here...
       preview.kill()
     } else if (str === 'n') {
       preview.kill()
@@ -106,14 +125,19 @@ function showPreview (int = 0, max = 1, data = []) {
       process.exit(1)
     }
   })
+
+  preview.stdout.pipe(process.stdout)
 }
 
 async function init () {
-  goto(0, 0)
-  console.log('fetching data...')
-  const stories = await getStories()
-  showPreview(0, (stories.length - 1), stories)
+  centerText(process.stdout.columns, 0, `'y' = save, 'n' = skip, 'q' = quit`)
+  const stories = await getMedia()
+  showMedia(0, (stories.length - 1), stories)
 }
 
 init()
+
+
+
+
 
