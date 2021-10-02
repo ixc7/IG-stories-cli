@@ -1,17 +1,15 @@
 /* eslint-disable */
+import https from 'https'
 import path from 'path'
 import readline from 'readline'
-import { spawn } from 'child_process'
-import axios from 'axios'
-import https from 'https'
-
+import child_process from 'child_process'
+import Progress from 'progress'
 import { getSetKey } from './keys.js'
-import { __dirname, clearScrollBack } from './utils.js'
-
-// utils
+import { clearScrollBack } from './utils.js'
 
 const { stdout, stdin } = process
 const { rows, columns } = stdout
+const { spawn } = child_process
 
 function goto (x = stdout.columns, y = 0) {
   clearScrollBack()
@@ -23,83 +21,79 @@ function centerText (x = stdout.columns, y = 0, msg = '') {
   stdin.write(`${msg}\n`)
 }
 
-
-// https
-
 async function getMedia (username = 'alice') {
+  centerText(columns, 0, '\'y\' = save, \'n\' = skip, \'q\' = quit')
 
+  const query = new URL('/clients/api/ig/ig_profile', 'https://instagram-bulk-profile-scrapper.p.rapidapi.com')
+  query.searchParams.set('ig', username)
+  query.searchParams.set('response_type', 'story')
 
+  const req = https.request(query.href) 
+  req.setHeader('x-rapidapi-host', 'instagram-bulk-profile-scrapper.p.rapidapi.com')
+  req.setHeader('x-rapidapi-key', await getSetKey())
 
-  const options = {
-    method: 'GET',
-    url: 'https://instagram-bulk-profile-scrapper.p.rapidapi.com/clients/api/ig/ig_profile',
-    params: {
-      ig: username,
-      response_type: 'story'
-    },
-    headers: {
-      'x-rapidapi-host': 'instagram-bulk-profile-scrapper.p.rapidapi.com',
-      'x-rapidapi-key': await getSetKey()
-    }
-  }
-  
-  const fetched = await axios.request(options)
-
-  // ...
-
-
-
-q
-
-
-
-  
-  //
-  if (fetched?.data[0]?.story?.data && fetched.data[0].story.data.length) {
-    const files = fetched.data[0].story.data.map(function (item) {
-      if (item.media_type === 1) {
-        return {
-          url: item.image_versions2.candidates[0].url,
-          type: 'jpg',
-          display: 'image'
-        }
-      } else if (item.media_type === 2) {
-        return {
-          url: item.video_versions[0].url,
-          type: 'mp4',
-          display: 'video'
-        }
-      }
-      return {}
+  req.on('response', function (res) {
+    let myData = ''
+    
+    const bar = new Progress('[:bar] :rate/bps :percent :etas', {
+      complete: '#',
+      incomplete: '_',
+      width: Math.floor(process.stdout.columns / 3),
+      total: parseInt(res.headers['content-length'], 10)
     })
-    return files
-  }
-  centerText(columns, 0, 'nothing found')
-  process.exit(0)
-  //
 
+    res.on('data', function (chunk) {
+      myData += chunk.toString('utf8')
+      bar.tick(chunk.length)
+    })
 
+    res.on('end', function () {
+      const fetched = JSON.parse(myData, 0, 2)
+      
+      if (fetched[0]?.story?.data && fetched[0].story.data.length) {
+        const files = fetched[0].story.data.map(function (item) {
+          if (item.media_type === 1) {
+            return {
+              url: item.image_versions2.candidates[0].url,
+              type: 'jpg',
+              display: 'image'
+            }
+          } else if (item.media_type === 2) {
+            return {
+              url: item.video_versions[0].url,
+              type: 'mp4',
+              display: 'video'
+            }
+          }
+        })
+        showMedia(0, (files.length), files)
+      } else {
+        centerText(columns, 0, 'nothing found')
+        process.exit(0)
+      }
+    })
+  })
 
-
-  
+  req.end()
 }
 
-// timg
 
 function showMedia (int = 0, max = 1, data = []) {
   if (int === max) {
     console.log('done')
     process.exit(0)
-  }
+  } 
+  
+  let gotKeypress = false
 
   centerText(columns, 0, `preview ${int + 1} of ${max}`)
   readline.emitKeypressEvents(stdin)
   stdin.setRawMode(true)
 
-  let gotKeypress = false
+  // TODO: profile picture, (posts...)
 
   const preview = spawn(
-    path.resolve(__dirname, '../vendor/timg'),
+    path.resolve(path.resolve(), '../vendor/timg'),
     [
       `-g ${columns}x${rows - 4}`,
       '--center',
@@ -107,8 +101,6 @@ function showMedia (int = 0, max = 1, data = []) {
       data[int].type === 'jpg' ? '-w 5' : ''
     ]
   )
-
-  preview.stdout.pipe(stdout)
 
   preview.on('close', async () => {
     stdin.removeAllListeners('keypress')
@@ -131,41 +123,38 @@ function showMedia (int = 0, max = 1, data = []) {
     }
   })
 
-  // TODO: preview.kill(preview.pid, <signal>)
+  preview.stdout.pipe(stdout)
+  
+  // TODO: preview.kill(preview.pid, <SIGUSR1, SIGUSR2> ?
   //       https://man7.org/linux/man-pages/man7/signal.7.html
-  //       SIGUSR1, SIGUSR2: User-defined signals
 
   stdin.on('keypress', (str) => {
+    gotKeypress = true
+    
     const actions = {
       y: () => preview.kill(),
       n: () => preview.kill(),
       q: () => process.kill(process.pid, 'SIGINT')
     }
-    gotKeypress = true
+    
     /* eslint-disable-next-line no-prototype-builtins */
     if (actions.hasOwnProperty(str)) actions[str]()
   })
 }
 
-// process 
-
 process.on('SIGINT', () => {
   const cleanup = spawn('tput', ['reset'])
-  cleanup.stdout.pipe(stdout)
+  
   cleanup.on('close', () => {
     console.log('exit')
     process.exit(0)
   })
+  
+  cleanup.stdout.pipe(stdout)
 })
 
 // init
+getMedia('yesturdae')
+//
 
-async function search (username = 'mary') {
-  centerText(columns, 0, '\'y\' = save, \'n\' = skip, \'q\' = quit')
-  const stories = await getMedia(username)
-  showMedia(0, (stories.length - 1), stories)
-}
-
-search('yesturdae')
-
-// TODO: export default search
+export default getMedia
