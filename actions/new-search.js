@@ -1,3 +1,4 @@
+/* eslint-disable */
 import path from 'path'
 import readline from 'readline'
 import { spawn } from 'child_process'
@@ -5,6 +6,8 @@ import axios from 'axios'
 import { getSetKey } from './keys.js'
 import { getSetDir, upsertDir } from './directories.js'
 import { __dirname, clearScrollBack } from './utils.js'
+
+// util
 
 function goto (x = process.stdout.columns, y = 0) {
   clearScrollBack()
@@ -15,6 +18,8 @@ function centerText (x = process.stdout.columns, y = 0, msg = 'msg') {
   goto(Math.floor((x / 2) - (msg.length / 2)), y)
   process.stdin.write(`${msg}\n`)
 }
+
+// fetch
 
 async function getMedia (username = 'alice') {
   const destination = await getSetDir({ username })
@@ -65,6 +70,8 @@ async function getMedia (username = 'alice') {
   process.exit(0)
 }
 
+// timg
+
 function showMedia (int = 0, max = 1, data = []) {
   if (int === max) {
     console.log('done')
@@ -89,6 +96,8 @@ function showMedia (int = 0, max = 1, data = []) {
 
   preview.stdout.pipe(process.stdout)
 
+  // TODO : use signals instead (?)
+  
   preview.on('close', async function () {
     process.stdin.removeAllListeners('keypress')
     if (gotKeypress === true) {
@@ -105,12 +114,17 @@ function showMedia (int = 0, max = 1, data = []) {
           process.stdin.removeAllListeners('keypress')
           showMedia((int + 1), max, data)
         } else if (str === 'q') {
-          process.exit(1)
+          process.kill(process.pid, 'SIGINT')
         }
       })
     }
   })
 
+  // TODO: preview.kill(preview.pid, <signal>)
+  //       could use an object instead of if/else.
+  //       https://man7.org/linux/man-pages/man7/signal.7.html
+  //       SIGUSR1, SIGUSR2: User-defined signals
+  
   process.stdin.on('keypress', function (str) {
     gotKeypress = true
     if (str === 'y') {
@@ -118,15 +132,30 @@ function showMedia (int = 0, max = 1, data = []) {
     } else if (str === 'n') {
       preview.kill()
     } else if (str === 'q') {
-      process.exit(1)
+      process.kill(process.pid, 'SIGINT')
     }
   })
 }
 
-async function init (username = 'alice') {
+// process handler(s)
+
+process.on('SIGINT', function () {
+  const cleanup = spawn('tput', ['reset'])
+  cleanup.stdout.pipe(process.stdout)
+  cleanup.on('close', function () {
+    console.log('exit')
+    process.exit(0)
+  })
+})
+
+// init
+
+async function search (username = 'mary') {
   centerText(process.stdout.columns, 0, '\'y\' = save, \'n\' = skip, \'q\' = quit')
   const stories = await getMedia(username)
   showMedia(0, (stories.length - 1), stories)
 }
 
-init('johncena')
+search('alice')
+
+// TODO: export default search
