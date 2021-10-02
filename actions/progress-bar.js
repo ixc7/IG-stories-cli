@@ -1,54 +1,29 @@
+/* eslint-disable */
+
+
 import https from 'https'
-// import { spawnSync } from 'child_process'
-import path from 'path'
-import fs from 'fs'
-import readline from 'readline'
 import Progress from 'progress'
-import open from 'open'
-import showMedia from './showMedia.js'
 
-const fileName = path.resolve(path.resolve(), 'myVideo.mp4')
-const destination = fs.createWriteStream(fileName)
+console.clear()
+console.log('starting download')
 
-// TODO: nest entire function inside search() for loop.
-//       there has to be a cleaner way to do this lol.
-// request file
+// https://developer.mozilla.org/en-US/docs/Web/API/URL_API
+const myUrl = new URL('/clients/api/ig/ig_profile', 'https://instagram-bulk-profile-scrapper.p.rapidapi.com')
 
-const req = https.request({
-  host: 'file-examples-com.github.io',
-  path: 'uploads/2017/04/file_example_MP4_640_3MG.mp4'
-})
+// https://nodejs.org/api/url.html#url_url_searchparams
+myUrl.searchParams.set('ig', 'alice')
+myUrl.searchParams.set('response_type', 'story')
 
-// exit on 's' or 'ctrl-c'
+const myHttpsRequest = https.request(myUrl.href) 
 
-const msg = {
-  cancel: '\ndownload cancelled',
-  sigint: '\ndownload interrupted'
-}
+// https://nodejs.org/api/http.html#http_request_setheader_name_value
+myHttpsRequest.setHeader('x-rapidapi-host', 'instagram-bulk-profile-scrapper.p.rapidapi.com')
+myHttpsRequest.setHeader('x-rapidapi-key', '9ddc074ad7mshe4cea43881459b3p1cdcfajsn8c1d26850b02')
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-})
+myHttpsRequest.on('response', function (res) {
 
-rl.input.on('keypress', function (str, key) {
-  if (str === 's') {
-    console.log(msg.cancel)
-    fs.rmSync(fileName)
-    process.exit(1)
-  }
-})
-
-rl.on('SIGINT', () => {
-  console.log(msg.sigint)
-  fs.rmSync(fileName)
-  process.exit(1)
-})
-
-// show progress bar
-// write + open + delete file
-
-req.on('response', async function (res) {
+  let myData = ''
+  
   const bar = new Progress('[:bar] :rate/bps :percent :etas', {
     complete: '#',
     incomplete: '_',
@@ -56,39 +31,65 @@ req.on('response', async function (res) {
     total: parseInt(res.headers['content-length'], 10)
   })
 
-  res.pipe(destination)
-
   res.on('data', function (chunk) {
+    myData += chunk.toString('utf8')
     bar.tick(chunk.length)
   })
 
   res.on('end', async function () {
     console.log('download complete')
-    msg.cancel = msg.sigint = ''
-    readline.cursorTo(process.stdout, 0, 4)
-
-    // TODO: WHY IS THIS FREEZING???????!!!!!!!!!
-    process.stdout.write(showMedia(fileName).stdout)
-
-    /*
-    // process.stdout.write(
-      // spawnSync('timg', [
-        // `-g ${process.stdout.columns}x${process.stdout.rows - 2}`,
-        // '--compress',
-        // fileName
-      // ]).stdout
-    // )
-    */
-
-    await open(fileName, { wait: true })
-    fs.rmSync(fileName)
+    const fetched = JSON.parse(myData, 0, 2)
+    const storyData = fetched[0].story.data[0].image_versions2.candidates[0].url
+    console.log(storyData)
     process.exit(0)
   })
+
 })
 
-// TODO.
-// process.on('beforeExit', (code) => { tput reset ... })
+myHttpsRequest.end()
 
-console.log(`download starting
-press 's' to cancel`)
-req.end()
+
+
+
+/*
+req.on('response', async function (res) {
+*/
+
+
+
+/*...
+
+
+
+
+...*/
+
+
+
+
+/*
+
+    const bar = new Progress('[:bar] :rate/bps :percent :etas', {
+      complete: '#',
+      incomplete: '_',
+      width: Math.floor(process.stdout.columns / 3),
+      total: parseInt(res.headers['content-length'], 10)
+    })
+
+    res.pipe(destination)
+
+    res.on('data', function (chunk) {
+      bar.tick(chunk.length)
+    })
+
+    res.on('end', async function () {
+      console.log('download complete')
+      process.exit(0)
+    })
+
+*/
+  
+// })
+
+// req.end()
+
