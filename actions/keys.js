@@ -1,8 +1,8 @@
 import fs from 'fs'
 import inquirer from 'inquirer'
-import { config } from './utils.js'
+import utils from './utils.js'
 
-/* API KEYS */
+const { config } = utils
 
 // get/set API key
 async function getSetKey (

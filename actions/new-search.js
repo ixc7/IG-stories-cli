@@ -1,8 +1,7 @@
-/* eslint-disable */
+import child_process from 'child_process'
 import https from 'https'
 import path from 'path'
 import readline from 'readline'
-import child_process from 'child_process'
 import Progress from 'progress'
 import { getSetKey } from './keys.js'
 import { clearScrollBack } from './utils.js'
@@ -28,13 +27,13 @@ async function getMedia (username = 'alice') {
   query.searchParams.set('ig', username)
   query.searchParams.set('response_type', 'story')
 
-  const req = https.request(query.href) 
+  const req = https.request(query.href)
   req.setHeader('x-rapidapi-host', 'instagram-bulk-profile-scrapper.p.rapidapi.com')
   req.setHeader('x-rapidapi-key', await getSetKey())
 
   req.on('response', (res) => {
     let myData = ''
-    
+
     const bar = new Progress('[:bar] :rate/bps :percent :etas', {
       complete: '#',
       incomplete: '_',
@@ -49,7 +48,6 @@ async function getMedia (username = 'alice') {
 
     res.on('end', () => {
       const fetched = JSON.parse(myData, 0, 2)
-      
       if (fetched[0]?.story?.data && fetched[0].story.data.length) {
         const files = fetched[0].story.data.map(function (item) {
           if (item.media_type === 1) {
@@ -77,13 +75,12 @@ async function getMedia (username = 'alice') {
   req.end()
 }
 
-
 function showMedia (int = 0, max = 1, data = []) {
   if (int === max) {
     console.log('done')
     process.exit(0)
-  } 
-  
+  }
+
   let gotKeypress = false
 
   centerText(columns, 0, `preview ${int + 1} of ${max}`)
@@ -124,32 +121,31 @@ function showMedia (int = 0, max = 1, data = []) {
   })
 
   preview.stdout.pipe(stdout)
-  
-  // TODO: preview.kill(preview.pid, <SIGUSR1, SIGUSR2> ?
+
+  // TODO: preview.kill(preview.pid, <SIGUSR1, SIGUSR2, SIGSTOP> ?
   //       https://man7.org/linux/man-pages/man7/signal.7.html
 
   stdin.on('keypress', (str) => {
     gotKeypress = true
-    
+
     const actions = {
       y: () => preview.kill(),
       n: () => preview.kill(),
       q: () => process.kill(process.pid, 'SIGINT')
     }
-    
-    /* eslint-disable-next-line no-prototype-builtins */
+
     if (actions.hasOwnProperty(str)) actions[str]()
   })
 }
 
 process.on('SIGINT', () => {
   const cleanup = spawn('tput', ['reset'])
-  
+
   cleanup.on('close', () => {
     console.log('exit')
     process.exit(0)
   })
-  
+
   cleanup.stdout.pipe(stdout)
 })
 

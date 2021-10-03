@@ -1,6 +1,11 @@
 import fs from 'fs'
+import readline from 'readline'
 import path from 'path'
 import axios from 'axios'
+import Progress from 'progress'
+
+// shorthand
+const { stdin, stdout } = process
 
 // __dirname polyfill
 const __dirname = path.dirname(new URL(import.meta.url).pathname)
@@ -24,6 +29,7 @@ function randomStr (input = '') {
 // read config file
 function config () {
   return JSON.parse(
+    // fs.readFileSync(path.resolve(path.resolve(), 'config.json'), {
     fs.readFileSync(path.resolve(__dirname, 'config.json'), {
       encoding: 'utf-8'
     })
@@ -62,11 +68,49 @@ async function downloadAll (
   console.log('download complete')
 }
 
-export {
+// move cursor to position
+function goto (x = stdout.columns, y = 0) {
+  clearScrollBack()
+  readline.cursorTo(process.stdout, x, y)
+}
+
+// display text in center of row
+function centerText (x = stdout.columns, y = 0, msg = '') {
+  goto(Math.floor((x / 2) - (msg.length / 2)), y)
+  stdin.write(`${msg}\n`)
+}
+
+// generate filename
+function makeName (prefix = 'filename', extension = 'txt') {
+  const date = (new Date()).toDateString().toLowerCase().replace(/\s/g, '_')
+  const str = (Math.random() + 1).toString(36).substring(2)
+  return `${prefix}_${date}_${str}.${extension}`
+}
+
+// progress bar
+function progress (response) {
+  const total = parseInt(response.headers['content-length'], 10)
+  if (isNaN(total)) return false
+  const bar = new Progress('[:bar] :rate/bps :percent :etas', {
+    complete: '#',
+    incomplete: '_',
+    width: Math.floor(process.stdout.columns / 3),
+    total
+  })
+  response.on('data', function (chunk) {
+    bar.tick(chunk.length)
+  })
+}
+
+export default {
   config,
   __dirname,
   clearScrollBack,
   randomStr,
   download,
-  downloadAll
+  downloadAll,
+  goto,
+  centerText,
+  makeName,
+  progress
 }
