@@ -11,7 +11,6 @@ module.exports = {
     sourceType: 'module'
   },
   rules: {
-    'padded-blocks': 'off',
     camelcase: 'off'
   }
 }

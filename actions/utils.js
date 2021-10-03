@@ -69,14 +69,14 @@ async function downloadAll (
 }
 
 // move cursor to position
-function goto (x = stdout.columns, y = 0) {
-  clearScrollBack()
+function goto (x = stdout.columns, y = 0, clear = true) {
+  if (clear) clearScrollBack()
   readline.cursorTo(process.stdout, x, y)
 }
 
 // display text in center of row
-function centerText (x = stdout.columns, y = 0, msg = '') {
-  goto(Math.floor((x / 2) - (msg.length / 2)), y)
+function centerText (x = stdout.columns, y = 0, msg = '', clear = true) {
+  goto(Math.floor((x / 2) - (msg.length / 2)), y, clear)
   stdin.write(`${msg}\n`)
 }
 
@@ -90,11 +90,12 @@ function makeName (prefix = 'filename', extension = 'txt') {
 // progress bar
 function progress (response) {
   const total = parseInt(response.headers['content-length'], 10)
+  const spacing = ' '.repeat(Math.floor(stdout.columns / 4))
   if (isNaN(total)) return false
-  const bar = new Progress('[:bar] :rate/bps :percent :etas', {
-    complete: '#',
+  const bar = new Progress(`${spacing}[:bar]`, {
+    complete: '\u001b[41m \u001b[0m',
     incomplete: '_',
-    width: Math.floor(process.stdout.columns / 3),
+    width: Math.floor(stdout.columns / 2),
     total
   })
   response.on('data', function (chunk) {

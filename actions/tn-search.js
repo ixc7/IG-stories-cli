@@ -15,14 +15,15 @@ process.on('SIGINT', () => {
   const cleanup = spawn('tput', ['reset'])
   cleanup.stdout.pipe(stdout)
   cleanup.on('close', () => {
-    console.log('exit')
+    // console.log('exit')
     process.exit(0)
   })
 })
 
 // ----
 function getAll (username, apiKey) {
-  console.log('starting')
+  // console.log('starting')
+  utils.centerText(columns, 0, `searching for ${username}`)
   keyboard.listen()
   keyboard.sigintListener()
 
@@ -40,7 +41,6 @@ function getAll (username, apiKey) {
     res.on('data', function (chunk) {
       dataStr += chunk.toString('utf8')
     })
-
     utils.progress(res)
 
     res.on('end', function () {
@@ -56,15 +56,12 @@ function getAll (username, apiKey) {
               type: 'jpg',
               display: 'image'
             }
-
           } else if (item.media_type === 2) {
-
             itemInfo = {
               url: item.video_versions[0].url,
               type: 'mp4',
               display: 'video'
             }
-
           }
           return itemInfo
         })
@@ -76,7 +73,8 @@ function getAll (username, apiKey) {
           max: filesList.length
         })
       } else {
-        console.log('no results')
+        // console.log('no results')
+        utils.centerText(columns, 0, 'nothing found')
         process.exit(0)
       }
     })
@@ -88,11 +86,13 @@ function getAll (username, apiKey) {
 // ----
 function getOne (opts) {
   if (opts.int === opts.max) {
-    console.log('done')
+    // console.log('done')
+    utils.centerText(columns, 0, 'done')
     process.exit(0)
   }
 
-  console.log(`loading ${opts.int + 1} of ${opts.max}`)
+  // console.log(`loading ${opts.int + 1} of ${opts.max}`)
+  utils.centerText(columns, 0, `preview ${opts.int + 1} of ${opts.max}`)
   keyboard.reload()
   keyboard.sigintListener()
 
@@ -114,7 +114,9 @@ function getOne (opts) {
 
 // ----
 function showOne (location, opts) {
-  console.log('y: keep, n: skip, q: quit')
+  // console.log('y: keep, n: skip, q: quit')
+  utils.centerText(columns, 0, 'y: keep, n: skip, q: quit')
+
   keyboard.reload()
   keyboard.sigintListener()
 

@@ -150,7 +150,7 @@ process.on('SIGINT', () => {
 })
 
 // init
-getMedia('yesturdae')
+getMedia('alice')
 //
 
 export default getMedia
