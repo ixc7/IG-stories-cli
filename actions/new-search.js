@@ -32,7 +32,7 @@ async function getMedia (username = 'alice') {
   req.setHeader('x-rapidapi-host', 'instagram-bulk-profile-scrapper.p.rapidapi.com')
   req.setHeader('x-rapidapi-key', await getSetKey())
 
-  req.on('response', function (res) {
+  req.on('response', (res) => {
     let myData = ''
     
     const bar = new Progress('[:bar] :rate/bps :percent :etas', {
@@ -42,12 +42,12 @@ async function getMedia (username = 'alice') {
       total: parseInt(res.headers['content-length'], 10)
     })
 
-    res.on('data', function (chunk) {
+    res.on('data', (chunk) => {
       myData += chunk.toString('utf8')
       bar.tick(chunk.length)
     })
 
-    res.on('end', function () {
+    res.on('end', () => {
       const fetched = JSON.parse(myData, 0, 2)
       
       if (fetched[0]?.story?.data && fetched[0].story.data.length) {
@@ -102,13 +102,13 @@ function showMedia (int = 0, max = 1, data = []) {
     ]
   )
 
-  preview.on('close', async () => {
+  preview.on('close', () => {
     stdin.removeAllListeners('keypress')
     if (gotKeypress === true) {
       goto(0, 0)
       showMedia((int + 1), max, data)
     } else {
-      stdin.on('keypress', function (str) {
+      stdin.on('keypress', (str) => {
         const actions = {
           y: () => showMedia((int + 1), max, data),
           n: () => showMedia((int + 1), max, data),

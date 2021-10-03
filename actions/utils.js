@@ -11,6 +11,16 @@ function clearScrollBack () {
   console.clear()
 }
 
+// random string
+function randomStr (input = '') {
+  const prefix = `${input.split(' ')[0]}_` || ''
+  const date = (new Date()).toDateString().toLowerCase().replace(/\s/g, '_')
+  const str = (Math.random() + 1)
+    .toString(36)
+    .substring(2)
+  return `${prefix}${str}_${date}`
+}
+
 // read config file
 function config () {
   return JSON.parse(
@@ -56,6 +66,7 @@ export {
   config,
   __dirname,
   clearScrollBack,
+  randomStr,
   download,
   downloadAll
 }
