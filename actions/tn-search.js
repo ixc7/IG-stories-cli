@@ -11,7 +11,15 @@ import { clearScrollBack } from './utils.js'
 const { stdout, stdin } = process
 const { rows, columns } = stdout
 const { spawn } = child_process
-
+const keyboard = {
+  listen () {
+    readline.emitKeypressEvents(stdin)
+    stdin.setRawMode(true)  
+  },
+  pause () {
+    stdin.removeAllListeners('keypress')
+  }
+}
 
 function goto (x = stdout.columns, y = 0) {
   clearScrollBack()
@@ -29,26 +37,37 @@ function makeName (prefix = 'filename', extension = 'txt') {
   return `${prefix}_${date}_${str}.${extension}`
 }
 
-////////////////////////////////
+function progressBar (response) {
+  const total = parseInt(response.headers['content-length'], 10)
+  if (isNaN(total)) return console.log('loading...')
+  
+  const bar = new Progress('[:bar] :rate/bps :percent :etas', {
+    complete: '#',
+    incomplete: '_',
+    width: Math.floor(process.stdout.columns / 3),
+    total
+  })
 
-
-
-
-
-////////////////////////////////
-
-
-// ----
-const defaultOpts = {
-  username:'username',
-  data: [],
-  int: 0,
-  max: 1
+  response.on('data', function (chunk) {
+    bar.tick(chunk.length)
+  })
 }
+
+
+////////////////////////////////
+
+
+
+
+
+////////////////////////////////
 
 
 // ----
 function getAll (username = 'username', apiKey = '') {
+
+  keyboard.pause()
+  console.log('getAll init')
 
   const query = new URL('/clients/api/ig/ig_profile', 'https://instagram-bulk-profile-scrapper.p.rapidapi.com')
   query.searchParams.set('ig', username)
@@ -65,6 +84,8 @@ function getAll (username = 'username', apiKey = '') {
     res.on('data', function (chunk) {
       dataStr += chunk.toString('utf8')
     })
+
+    progressBar(res)
 
     res.on('end', function () {
     
@@ -97,9 +118,7 @@ function getAll (username = 'username', apiKey = '') {
         }
         
         getOne(options)
-        // now call this recursively -> getOne ... showOne ... A/B loop
-        // already know we can recursively call https requests on themselves
-        
+        // getOne ... showOne ... A/B loop
 
       } else {
         console.log('no results')
@@ -111,42 +130,38 @@ function getAll (username = 'username', apiKey = '') {
   req.end()
 }
 
-
 // ----
-function getOne (opts = defaultOpts) {
-  console.log('getOne init')
+function getOne (opts) {
   
   if (opts.int === opts.max) {
     console.log('done')
     process.exit(0)
   }
   
+  keyboard.pause()
+  console.log('getOne init')
+  
   const current = opts.data[opts.int]
-  const fileName = makeName(current.username, current.type)
+  const fileName = makeName(opts.username, current.type)
   const filePath = path.resolve(path.resolve(), fileName)
   const stream = fs.createWriteStream(filePath)
-  const req = https.request(current.url)
-  
-  stdin.removeAllListeners('keypress')
+  const req = https.request(current.url) 
 
   req.on('response', (res) => {
     res.pipe(stream)
+
+    // progress bar........
+    progressBar(res)
     
     res.on('end', () => {
-      console.log('getOne on end')
-      
-      readline.emitKeypressEvents(stdin)
-      stdin.setRawMode(true)
+
+      keyboard.listen()
+      console.log('getOne on end (press any key)')
       
       stdin.on('keypress', function (str) {
         console.log('keypress calls showOne')
 
-        showOne(filePath, {
-          username: opts.username,
-          data: opts.data,
-          int: opts.int,
-          max: opts.max
-        })
+        showOne(filePath, opts)
       })
     })
   })
@@ -155,21 +170,17 @@ function getOne (opts = defaultOpts) {
 
 
 // ----
-function showOne (location, opts = defaultOpts) {
-  console.log('showOne init')
+function showOne (location, opts) {
 
-  stdin.removeAllListeners('keypress')
+  keyboard.pause()
+  console.log('showOne init')
 
   const rendered = spawn(
     path.resolve(path.resolve(), '../vendor/timg'),
     [
-      // `-g ${columns}x${rows - 4}`,
-      `-g 50x25`,
+      `-g ${columns}x${rows - 4}`,
       '--center',
-      // opts.data[opts.int].url,
       location
-      // ,
-      // opts.data[opts.int].type === 'jpg' ? '-w 5' : ''
     ]
   )
   
@@ -177,10 +188,9 @@ function showOne (location, opts = defaultOpts) {
 
   rendered.on('close', () => {
   
-    console.log('showOne on close')
-    readline.emitKeypressEvents(stdin)
-    stdin.setRawMode(true)
-    
+    keyboard.listen()
+    console.log('showOne on close (press any key)')
+        
     stdin.on('keypress', function (str) {
       console.log('keypress calls getOne')
       
@@ -202,7 +212,7 @@ async function init (username = 'alice') {
   getAll(username, apiKey)
 }
 
-init('yesturdae')
+init()
 
 
 ////////////////////////////////
