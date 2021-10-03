@@ -1,7 +1,9 @@
+/* eslint-disable */
 import https from 'https'
 import path from 'path'
 import fs from 'fs'
 import child_process from 'child_process'
+import { getSetDir, upsertDir } from './directories.js'
 import { getSetKey } from './keys.js'
 import keyboard from './keyboard.js'
 import utils from './utils.js'
@@ -15,15 +17,14 @@ process.on('SIGINT', () => {
   const cleanup = spawn('tput', ['reset'])
   cleanup.stdout.pipe(stdout)
   cleanup.on('close', () => {
-    // console.log('exit')
+    utils.centerText(columns, 0, 'exit')
     process.exit(0)
   })
 })
 
 // ----
-function getAll (username, apiKey) {
-  // console.log('starting')
-  utils.centerText(columns, 0, `searching for ${username}`)
+function getAll (username, apiKey, destination) {
+  utils.centerText(columns, 0, `searching for '${username}'`)
   keyboard.listen()
   keyboard.sigintListener()
 
@@ -66,14 +67,13 @@ function getAll (username, apiKey) {
           return itemInfo
         })
 
-        getOne({
+        getOne(destination, {
           username,
           data: filesList,
           int: 0,
-          max: filesList.length
+          max: filesList.length,
         })
       } else {
-        // console.log('no results')
         utils.centerText(columns, 0, 'nothing found')
         process.exit(0)
       }
@@ -84,39 +84,37 @@ function getAll (username, apiKey) {
 }
 
 // ----
-function getOne (opts) {
+function getOne (destination, opts) {
   if (opts.int === opts.max) {
-    // console.log('done')
     utils.centerText(columns, 0, 'done')
     process.exit(0)
   }
 
-  // console.log(`loading ${opts.int + 1} of ${opts.max}`)
-  utils.centerText(columns, 0, `preview ${opts.int + 1} of ${opts.max}`)
+  utils.centerText(columns, 0, `loading preview ${opts.int + 1} of ${opts.max} in ${destination}`)
   keyboard.reload()
   keyboard.sigintListener()
 
   const current = opts.data[opts.int]
   const fileName = utils.makeName(opts.username, current.type)
-  const filePath = path.resolve(path.resolve(), fileName)
+  // const filePath = path.resolve(path.resolve(), fileName)
+  const filePath = `${destination}/${fileName}`
+  // const filePath = path.resolve(`${opts.destinataion}`, `${fileName}`)
   const stream = fs.createWriteStream(filePath)
   const req = https.request(current.url)
 
   req.on('response', (res) => {
-    utils.progress(res)
+  utils.progress(res)
     res.pipe(stream)
     res.on('end', () => {
-      showOne(filePath, opts)
+      showOne(destination, filePath, opts)
     })
   })
   req.end()
 }
 
 // ----
-function showOne (location, opts) {
-  // console.log('y: keep, n: skip, q: quit')
+function showOne (destination, filePath, opts) {
   utils.centerText(columns, 0, 'y: keep, n: skip, q: quit')
-
   keyboard.reload()
   keyboard.sigintListener()
 
@@ -125,8 +123,7 @@ function showOne (location, opts) {
     [
       `-g ${columns}x${rows - 4}`,
       '--center',
-      location,
-      opts.data[opts.int].type === 'jpg' ? '-w 10' : ''
+      filePath
     ]
   )
   rendered.stdout.pipe(stdout)
@@ -139,17 +136,18 @@ function showOne (location, opts) {
     },
     n: () => {
       signal = 'skip'
+      fs.rm(filePath, () => {})
       rendered.kill()
     }
   })
 
   rendered.on('close', () => {
     function getNext () {
-      getOne({
+      getOne(destination, {
         username: opts.username,
         data: opts.data,
         int: opts.int + 1,
-        max: opts.max
+        max: opts.max,
       })
     }
     if (signal === 'skip' || signal === 'save') {
@@ -159,7 +157,10 @@ function showOne (location, opts) {
       keyboard.sigintListener()
       keyboard.keyListener({
         y: () => getNext(),
-        n: () => getNext()
+        n: () => {
+          fs.rm(destination, () => {})
+          getNext()
+        }
       })
     }
   })
@@ -168,7 +169,10 @@ function showOne (location, opts) {
 // ----
 async function init (username = 'alice') {
   const apiKey = await getSetKey()
-  getAll(username, apiKey)
+  const destination = await getSetDir({ username })
+  upsertDir(destination)
+  getAll(username, apiKey, destination)
 }
 
-init('yesturdae')
+init()
+export default init

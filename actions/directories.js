@@ -2,11 +2,10 @@ import fs from 'fs'
 import path from 'path'
 import inquirer from 'inquirer'
 import { execSync } from 'child_process'
-import { config, __dirname } from './utils.js'
+import utils from './utils.js'
+const { config, __dirname } = utils
 
-/* FILESYSTEM */
-
-// where to save files
+// directory to save files
 async function getSetDir (
   options = {
     username: null,
