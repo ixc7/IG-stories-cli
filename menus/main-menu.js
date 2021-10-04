@@ -1,6 +1,5 @@
 import inquirer from 'inquirer'
-import search from '../actions/search.js'
-import favoritesMenu from './favorites-menu.js'
+import searchMenu from './search-menu.js'
 import historyMenu from './history-menu.js'
 import configMenu from './config-menu.js'
 
@@ -8,20 +7,17 @@ export default async function mainMenu () {
   const answers = await inquirer.prompt([
     {
       type: 'list',
-      name: 'submenu',
+      name: 'selection',
       message: 'select an option',
       choices: [
         {
-          value: 'newSearch',
-          name: 'download stories'
-        },
-        {
-          value: 'favoritesMenu',
-          name: 'view saved users'
+          value: 'searchMenu',
+          name: 'search for a username'
         },
         {
           value: 'historyMenu',
-          name: 'view search history'
+          name: 'view downloads'
+          // name: 'view search history'
         },
         {
           value: 'configMenu',
@@ -36,19 +32,14 @@ export default async function mainMenu () {
   ])
 
   const actions = {
-    async newSearch () {
-      await search()
-      await mainMenu()
-    },
-    favoritesMenu,
+    searchMenu,
     historyMenu,
     configMenu,
     exit () {
-      return console.log('goodbye')
+      console.log('goodbye')
+      process.exit(0)
     }
   }
 
-  await actions[answers.submenu]()
+  await actions[answers.selection]()
 }
-
-export { mainMenu }

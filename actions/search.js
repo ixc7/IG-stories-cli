@@ -1,240 +1,173 @@
 /* eslint-disable */
-
+import https from 'https'
 import path from 'path'
-import { execSync, spawn } from 'child_process'
-import inquirer from 'inquirer'
-import readline from 'readline'
-import axios from 'axios'
-import { __dirname, config, downloadAll, clearScrollBack } from './utils.js'
+import fs from 'fs'
+import { spawn } from 'child_process'
 import { getSetDir, upsertDir } from './directories.js'
-import { addFavorite } from './favorites.js'
-import { setHistory } from './history.js'
 import { getSetKey } from './keys.js'
+import keyboard from './keyboard.js'
+import utils from './utils.js'
 
-export default async function search (user) {
-  // get username
-  const username = user || (
-    await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'username',
-        message: 'instagram username',
-        validate (input) {
-          if (typeof input === 'string' && !!input) return true
-          return 'value cannot be empty'
-        }
+const { stdout } = process
+const { rows, columns } = stdout
+
+// ----
+process.on('SIGINT', () => {
+  const cleanup = spawn('tput', ['reset'])
+  cleanup.stdout.pipe(stdout)
+  cleanup.on('close', () => {
+    utils.centerText(columns, 0, 'exit')
+    process.exit(0)
+  })
+})
+
+// ----
+function getAll (username, apiKey, destination) {
+  utils.centerText(columns, 0, `searching for '${username}'`)
+  keyboard.listen()
+  keyboard.sigintListener()
+
+  const query = new URL('/clients/api/ig/ig_profile', 'https://instagram-bulk-profile-scrapper.p.rapidapi.com')
+  query.searchParams.set('ig', username)
+  query.searchParams.set('response_type', 'story')
+
+  const req = https.request(query.href)
+  req.setHeader('x-rapidapi-host', 'instagram-bulk-profile-scrapper.p.rapidapi.com')
+  req.setHeader('x-rapidapi-key', apiKey)
+
+  req.on('response', function (res) {
+    let dataStr = ''
+
+    res.on('data', function (chunk) {
+      dataStr += chunk.toString('utf8')
+    })
+    utils.progress(res)
+
+    res.on('end', function () {
+      const dataObj = JSON.parse(dataStr, 0, 2)
+
+      if (dataObj[0]?.story?.data?.length) {
+        const filesList = dataObj[0].story.data.map(function (item) {
+          let itemInfo = {}
+
+          if (item.media_type === 1) {
+            itemInfo = {
+              url: item.image_versions2.candidates[0].url,
+              type: 'jpg',
+              display: 'image'
+            }
+          } else if (item.media_type === 2) {
+            itemInfo = {
+              url: item.video_versions[0].url,
+              type: 'mp4',
+              display: 'video'
+            }
+          }
+          return itemInfo
+        })
+
+        getOne(destination, {
+          username,
+          data: filesList,
+          int: 0,
+          max: filesList.length,
+        })
+      } else {
+        utils.centerText(columns, 0, 'nothing found')
+        process.exit(0)
       }
-    ])
-  ).username
+    })
+  })
+  req.end()
+}
 
-  // get directory
-  const destination = await getSetDir({ username })
+// ----
+function getOne (destination, opts) {
+  if (opts.int === opts.max) {
+    utils.centerText(columns, 0, 'done')
+    process.exit(0)
+  }
 
-  // get data from API
-  console.log('fetching data from API')
-  const fetched = await axios.request({
-    method: 'GET',
-    url: 'https://instagram-bulk-profile-scrapper.p.rapidapi.com/clients/api/ig/ig_profile',
-    params: {
-      ig: username,
-      response_type: 'story'
+  utils.centerText(columns, 0, `loading preview ${opts.int + 1} of ${opts.max}`)
+  keyboard.reload()
+  keyboard.sigintListener()
+
+  const current = opts.data[opts.int]
+  const fileName = utils.makeName(opts.username, current.type)
+  const filePath = `${destination}/${fileName}`
+  const stream = fs.createWriteStream(filePath)
+  const req = https.request(current.url)
+
+  req.on('response', (res) => {
+    utils.progress(res)
+    res.pipe(stream)
+    res.on('end', () => {
+      showOne(destination, filePath, opts)
+    })
+  })
+  req.end()
+}
+
+// ----
+function showOne (destination, filePath, opts) {
+  utils.centerText(columns, 0, 'y: keep, n: skip, q: quit')
+  keyboard.reload()
+  keyboard.sigintListener()
+
+  const rendered = spawn(
+    path.resolve(path.resolve(), 'vendor/timg'),
+    [
+      `-g ${columns}x${rows - 4}`,
+      '--center',
+      filePath
+    ]
+  )
+  rendered.stdout.pipe(stdout)
+
+  let signal = ''
+  keyboard.keyListener({
+    y: () => {
+      signal = 'save'
+      rendered.kill()
     },
-    headers: {
-      'x-rapidapi-host': 'instagram-bulk-profile-scrapper.p.rapidapi.com',
-      'x-rapidapi-key': await getSetKey()
+    n: () => {
+      signal = 'skip'
+      fs.rm(filePath, () => {})
+      rendered.kill()
     }
   })
 
-  // if stories are found...
-  if (fetched?.data[0]?.story?.data && fetched.data[0].story.data.length) {
-    const count = {
-      photo: 0,
-      video: 0
-    }
-
-    // map urls w/ file extensions
-    const urls = fetched.data[0].story.data.map(function (item) {
-      if (item.media_type === 1) {
-        count.photo += 1
-        return {
-          url: item.image_versions2.candidates[0].url,
-          type: 'jpg',
-          display: 'image'
-        }
-      } else if (item.media_type === 2) {
-        count.video += 1
-        return {
-          url: item.video_versions[0].url,
-          type: 'mp4',
-          display: 'video'
-        }
-      }
-      return true
-    })
-
-    // mkdir
-    upsertDir(destination)
-    const urlsToSave = []
-    const cols = process.stdout.columns
-    const rows = process.stdout.rows
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-    // for (let i = 0; i < urls.length; i++) {
-    ///// START OF FOR LOOP
-
-      /*
-      clearScrollBack()
-      console.log(
-        `found ${count.photo} ${count.photo === 1 ? 'photo' : 'photos'}`,
-        `and ${count.video} ${count.video === 1 ? 'video' : 'videos'}`,
-        `\nloading story ${i + 1} of ${urls.length} (${urls[i].display})`
-      )
-      */
-
-      
-      // readline.cursorTo(process.stdout, 0, 4)
-
-      
-
-      const preview = spawn(
-        path.resolve(__dirname, '../vendor/timg'),
-        [
-          `-g ${cols - 10}x${rows - 10}`,
-          '--center',
-          urls[i].url
-        ]
-      )
-
-      preview.on('close', function (code, signal) {
-      // readline.cursorTo(process.stdout, 0, 0) // MOVE CURSOR TO TOP
-      // readline.cursorTo(process.stdout, 0, 4) // MOVE CURSOR TO TOP + 4
-      // readline.cursorTo(process.stdout, 0, process.stdout.rows) // MOVE CURSOR TO BOTTOM
-        // if (urls[i].display === 'video') {
-          readline.cursorTo(process.stdout, 0, 0)
-          clearScrollBack()
-        // }
+  rendered.on('close', () => {
+    function getNext () {
+      getOne(destination, {
+        username: opts.username,
+        data: opts.data,
+        int: opts.int + 1,
+        max: opts.max,
       })
-
-      preview.stdout.pipe(process.stdout)
-      
-      
-      // preview.stdin.removeAllListeners("data")
-      // preview.stderr.removeAllListeners("data")
-      // preview.on('close', function () {
-      // readline.cursorTo(process.stdout, 0, process.stdout.rows)
-      // })
-      // readline.cursorTo(process.stdout, 0, process.stdout.rows)
-
-
-
-      // inquirer is fucking the video up
-      // the video runs and stops and clears the screen on end
-      // every time you type a letter into the prompt it just makes new lines of itself across the screen
-      // and only the video part in the middle re renders
-      // ... idk maybe just use readline
-
-      /*
-      const confirmDownload = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'save',
-          message: `save ${i + 1}?`
+    }
+    if (signal === 'skip' || signal === 'save') {
+      getNext()
+    } else {
+      keyboard.reload()
+      keyboard.sigintListener()
+      keyboard.keyListener({
+        y: () => getNext(),
+        n: () => {
+          fs.rm(destination, () => {})
+          getNext()
         }
-      ])
-
-      if (confirmDownload.save) {
-        urlsToSave.push(urls[i])
-      }
-      */
-
-      // preview.kill('SIGINT')
-      // clearScrollBack()
-
-
-
-
-
-
-
-
-    ///// END OF FOR LOOP
-    // }
-
-
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-    // done iterating through stories. clear screen.
-    clearScrollBack()
-
-    // if user selected anything to download...
-    if (urlsToSave.length) {
-      // download it
-      await downloadAll(urlsToSave, destination, {
-        console: true
       })
-
-      // add to history
-      setHistory(username)
-
-      // save username y/n
-      const confirmSave = (
-        await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'save',
-            message () {
-              return `add '${username}?' to saved?`
-            },
-            when () {
-              return config().users.indexOf(username) === -1
-            }
-          }
-        ])
-      ).save
-
-      if (confirmSave) {
-        addFavorite(username)
-        console.log('saved!')
-      }
-
-      // open directory and exit
-      execSync(`open ${destination}`)
     }
-
-    // if user selected NOTHING AT ALL to save...
-    else {
-      console.log('nothing selected')
-    }
-  }
-
-  // if no stories are found...
-  else {
-    console.log('nothing found')
-  }
+  })
 }
+
+// ----
+async function init (username = ' ') {
+  const apiKey = await getSetKey()
+  const destination = await getSetDir({ username })
+  upsertDir(destination)
+  getAll(username, apiKey, destination)
+}
+
+export default init

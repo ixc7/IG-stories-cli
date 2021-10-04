@@ -1,5 +1,7 @@
 import fs from 'fs'
-import { config } from './utils.js'
+import utils from './utils.js'
+
+const { config } = utils
 
 function setHistory (username) {
   const updated = JSON.stringify(

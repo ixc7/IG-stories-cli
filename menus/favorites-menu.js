@@ -1,10 +1,12 @@
 import inquirer from 'inquirer'
-import { config } from '../actions/utils.js'
+import utils from '../actions/utils.js'
 import { checkRepeat } from '../actions/inquirer-actions.js'
 import search from '../actions/search.js'
 import { getSetDir, openDir, removeDir, checkDirExists } from '../actions/directories.js'
 import { removeFavorite } from '../actions/favorites.js'
 import mainMenu from './main-menu.js'
+
+const { config } = utils
 
 export default async function favoritesMenu () {
   if (config().users.length) {

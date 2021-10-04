@@ -1,7 +1,7 @@
 import inquirer from 'inquirer'
 import { checkConfirm, checkRepeat } from '../actions/inquirer-actions.js'
 import { getSetKey, unsetKey } from '../actions/keys.js'
-import { removeAllFavorites } from '../actions/favorites.js'
+// import { removeAllFavorites } from '../actions/favorites.js'
 import { unsetHistory } from '../actions/history.js'
 import { getSetDir } from '../actions/directories.js'
 import mainMenu from './main-menu.js'
@@ -25,11 +25,12 @@ export default async function configMenu () {
           {
             value: 'history',
             name: 'clear history' // enable/disable/reset/go to history prompt
-          },
-          {
-            value: 'saved',
-            name: 'clear saved users' // enable/disable/reset/ go to saved prompt
           }
+          //,
+          // {
+          //   value: 'saved',
+          //   name: 'clear saved users' // enable/disable/reset/ go to saved prompt
+          // }
         ]
       }
     ])
@@ -55,12 +56,13 @@ export default async function configMenu () {
       if (await checkConfirm()) {
         unsetHistory()
       }
-    },
-    async saved () {
-      if (await checkConfirm()) {
-        removeAllFavorites()
-      }
     }
+    //,
+    // async saved () {
+    //   if (await checkConfirm()) {
+    //     removeAllFavorites()
+    //   }
+    // }
   }
 
   await actions[selection]()

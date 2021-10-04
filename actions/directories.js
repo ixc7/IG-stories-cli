@@ -3,7 +3,8 @@ import path from 'path'
 import inquirer from 'inquirer'
 import { execSync } from 'child_process'
 import utils from './utils.js'
-const { config, __dirname } = utils
+// const { config, __dirname } = utils
+const { config } = utils
 
 // directory to save files
 async function getSetDir (
@@ -18,7 +19,8 @@ async function getSetDir (
         type: 'input',
         name: 'destination',
         message: 'path',
-        default: path.resolve(__dirname, 'downloads'),
+        // default: path.resolve(__dirname, 'downloads'),
+        default: path.resolve(path.resolve(), 'downloads'),
         validate (input) {
           if (typeof input === 'string' && !!input) return true
           return 'value cannot be empty'

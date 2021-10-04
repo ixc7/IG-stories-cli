@@ -4,13 +4,9 @@ import path from 'path'
 import axios from 'axios'
 import Progress from 'progress'
 
-// shorthand
 const { stdin, stdout } = process
 
-// __dirname polyfill
-const __dirname = path.dirname(new URL(import.meta.url).pathname)
-
-// clear scrollback
+// no scroll history
 function clearScrollBack () {
   process.stdout.write('\u001b[3J\u001b[1J')
   console.clear()
@@ -26,11 +22,13 @@ function randomStr (input = '') {
   return `${prefix}${str}_${date}`
 }
 
+
 // read config file
+// TODO: just import it.
 function config () {
   return JSON.parse(
-    // fs.readFileSync(path.resolve(path.resolve(), 'config.json'), {
-    fs.readFileSync(path.resolve(__dirname, 'config.json'), {
+    // fs.readFileSync(path.resolve(path.resolve(), '../config.json'), {
+    fs.readFileSync(path.resolve(path.resolve(), 'config.json'), {
       encoding: 'utf-8'
     })
   )
@@ -87,7 +85,7 @@ function makeName (prefix = 'filename', extension = 'txt') {
   return `${prefix}_${date}_${str}.${extension}`
 }
 
-// progress bar
+// centered progress bar
 function progress (response) {
   const total = parseInt(response.headers['content-length'], 10)
   const spacing = ' '.repeat(Math.floor(stdout.columns / 4))
@@ -105,7 +103,6 @@ function progress (response) {
 
 export default {
   config,
-  __dirname,
   clearScrollBack,
   randomStr,
   download,
