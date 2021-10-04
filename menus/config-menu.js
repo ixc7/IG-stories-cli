@@ -12,32 +12,27 @@ export default async function configMenu () {
       {
         type: 'list',
         name: 'selection',
-        message: 'select a field to edit',
+        message: 'select an option',
         choices: [
           {
-            value: 'setKey',
-            name: 'edit API Key' // edit/reset
+            value: 'changeAPIKey',
+            name: 'change API Key'
           },
           {
-            value: 'setDir',
-            name: 'edit destination folder' // edit/reset
+            value: 'changeDownloadsFolder',
+            name: 'change downloads folder'
           },
           {
-            value: 'history',
-            name: 'clear history' // enable/disable/reset/go to history prompt
+            value: 'clearHistory',
+            name: 'clear history'
           }
-          //,
-          // {
-          //   value: 'saved',
-          //   name: 'clear saved users' // enable/disable/reset/ go to saved prompt
-          // }
         ]
       }
     ])
   ).selection
 
   const actions = {
-    async setKey () {
+    async changeAPIKey () {
       if (await checkConfirm()) {
         unsetKey()
         await getSetKey({
@@ -45,24 +40,20 @@ export default async function configMenu () {
         })
       }
     },
-    async setDir () {
+    async changeDownloadsFolder () {
+      // TODO: refactor to check confirm after user changes value
+      //       add a back button
       if (await checkConfirm()) {
         await getSetDir({
           set: true
         })
       }
     },
-    async history () {
+    async clearHistory () {
       if (await checkConfirm()) {
         unsetHistory()
       }
     }
-    //,
-    // async saved () {
-    //   if (await checkConfirm()) {
-    //     removeAllFavorites()
-    //   }
-    // }
   }
 
   await actions[selection]()

@@ -22,13 +22,13 @@ function randomStr (input = '') {
   return `${prefix}${str}_${date}`
 }
 
-
 // read config file
 // TODO: just import it.
 function config () {
   return JSON.parse(
     // fs.readFileSync(path.resolve(path.resolve(), '../config.json'), {
-    fs.readFileSync(path.resolve(path.resolve(), 'config.json'), {
+    // fs.readFileSync('../config.json', {
+    fs.readFileSync(new URL('../config.json', import.meta.url).pathname, {
       encoding: 'utf-8'
     })
   )

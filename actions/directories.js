@@ -3,57 +3,45 @@ import path from 'path'
 import inquirer from 'inquirer'
 import { execSync } from 'child_process'
 import utils from './utils.js'
-// const { config, __dirname } = utils
 const { config } = utils
 
-// directory to save files
-async function getSetDir (
-  options = {
-    username: null,
-    set: false
-  }
-) {
-  async function setDir () {
-    const input = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'destination',
-        message: 'path',
-        // default: path.resolve(__dirname, 'downloads'),
-        default: path.resolve(path.resolve(), 'downloads'),
-        validate (input) {
-          if (typeof input === 'string' && !!input) return true
-          return 'value cannot be empty'
-        }
+async function setDir () {
+  const destination = (await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'destination',
+      message: 'path',
+      // default: path.resolve(path.resolve(), 'downloads'),
+      default: new URL('../DOWNLOADS', import.meta.url).pathname,
+      validate (input) {
+        if (typeof input === 'string' && !!input) return true
+        return 'value cannot be empty'
       }
-    ])
+    }
+  ])).destination
 
-    fs.writeFileSync(
-      'config.json',
-      JSON.stringify({
-        ...config(),
-        destination: input.destination
-      }),
-      {
-        encoding: 'utf-8'
-      },
-      2
-    )
+  fs.writeFileSync(
+    new URL('../../config.json', import.meta.url).pathname,
+    // '../../config.json',
+    JSON.stringify({
+      ...config(),
+      destination
+    }, 0, 2),
+    {
+      encoding: 'utf-8'
+    },
+    2
+  )
+  return destination
+}
 
-    return input.destination
-  }
+// directory to save files
+async function getSetDir (options = { username: '', set: false }) {
+  const basePath = options.set || !config().destination
+    ? await setDir()
+    : config().destination
 
-  let basePath
-
-  if (config().destination && !options.set) {
-    basePath = config().destination
-  } else {
-    basePath = await setDir()
-  }
-
-  if (!options.set) {
-    return path.resolve(basePath, options.username)
-  }
+  return path.resolve(basePath, options.username)
 }
 
 function checkDirExists (location) {
@@ -75,7 +63,6 @@ function openDir (location) {
   execSync(`open ${location}`)
 }
 
-// delete files
 function removeDir (location) {
   fs.readdirSync(location).forEach(function (file) {
     fs.rmSync(path.resolve(location, file))

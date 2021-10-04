@@ -88,13 +88,14 @@ function getOne (destination, opts) {
     process.exit(0)
   }
 
-  utils.centerText(columns, 0, `loading preview ${opts.int + 1} of ${opts.max}`)
+  utils.centerText(columns, 0, `loading preview ${opts.int + 1} of ${opts.max} at ${destination}`)
   keyboard.reload()
   keyboard.sigintListener()
 
   const current = opts.data[opts.int]
   const fileName = utils.makeName(opts.username, current.type)
-  const filePath = `${destination}/${fileName}`
+  // const filePath = `${destination}/${fileName}`
+  const filePath = path.resolve(destination, fileName)
   const stream = fs.createWriteStream(filePath)
   const req = https.request(current.url)
 
@@ -110,12 +111,14 @@ function getOne (destination, opts) {
 
 // ----
 function showOne (destination, filePath, opts) {
-  utils.centerText(columns, 0, 'y: keep, n: skip, q: quit')
+  // utils.centerText(columns, 0, 'y: keep, n: skip, q: quit')
+  utils.centerText(columns, 0, filePath)
   keyboard.reload()
   keyboard.sigintListener()
 
   const rendered = spawn(
-    path.resolve(path.resolve(), 'vendor/timg'),
+    // path.resolve(path.resolve(), '../vendor/timg'),
+    new URL('../vendor/timg', import.meta.url).pathname,
     [
       `-g ${columns}x${rows - 4}`,
       '--center',
@@ -132,7 +135,9 @@ function showOne (destination, filePath, opts) {
     },
     n: () => {
       signal = 'skip'
-      fs.rm(filePath, () => {})
+      // fs.rm(filePath, () => {})
+      // fs.rm(filePath, () => { rendered.kill() })
+      fs.rmSync(filePath)
       rendered.kill()
     }
   })
@@ -154,7 +159,8 @@ function showOne (destination, filePath, opts) {
       keyboard.keyListener({
         y: () => getNext(),
         n: () => {
-          fs.rm(destination, () => {})
+          // fs.rm(filePath, () => { getNext() })
+          fs.rmSync(filePath)
           getNext()
         }
       })
@@ -165,9 +171,10 @@ function showOne (destination, filePath, opts) {
 // ----
 async function init (username = ' ') {
   const apiKey = await getSetKey()
-  const destination = await getSetDir({ username })
-  upsertDir(destination)
-  getAll(username, apiKey, destination)
+  const downloadsDir = await getSetDir({ username })
+  upsertDir(downloadsDir)
+  getAll(username, apiKey, downloadsDir)
 }
 
+init('yesturdae')
 export default init
