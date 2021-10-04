@@ -1,4 +1,5 @@
 /* eslint-disable */
+import readline from 'readline'
 import https from 'https'
 import path from 'path'
 import fs from 'fs'
@@ -168,9 +169,20 @@ function showOne (destination, filePath, opts) {
 // ----
 async function init (username = ' ') {
   const apiKey = await getSetKey()
-  const downloadsDir = await getSetDir({ username })
-  upsertDir(downloadsDir)
-  return getAll(username, apiKey, downloadsDir)
+
+  const getDownloadsDir = async () => { 
+    const dir = await getSetDir({ username })
+    readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    })
+    upsertDir(dir)
+    return dir
+  }
+  
+  const downloadsDir = await getDownloadsDir()
+  getAll(username, apiKey, downloadsDir)
+  
 }
 
 export default init
