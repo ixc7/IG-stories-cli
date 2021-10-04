@@ -1,6 +1,14 @@
 import readline from 'readline'
 const { stdin } = process
 
+// function open (prompt = '> ') {
+//   return readline.createInterface({
+//     input: process.stdin,
+//     output: process.stdout,
+//     prompt
+//   })
+// }
+
 function listen () {
   readline.emitKeypressEvents(stdin)
   stdin.setRawMode(true)
@@ -28,6 +36,7 @@ function sigintListener () {
 }
 
 export default {
+  // open,
   listen,
   close,
   reload,

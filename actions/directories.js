@@ -3,15 +3,16 @@ import path from 'path'
 import inquirer from 'inquirer'
 import { execSync } from 'child_process'
 import utils from './utils.js'
+
 const { config } = utils
 
+// ----
 async function setDir () {
   const destination = (await inquirer.prompt([
     {
       type: 'input',
       name: 'destination',
       message: 'path',
-      // default: path.resolve(path.resolve(), 'downloads'),
       default: new URL('../DOWNLOADS', import.meta.url).pathname,
       validate (input) {
         if (typeof input === 'string' && !!input) return true
@@ -21,8 +22,7 @@ async function setDir () {
   ])).destination
 
   fs.writeFileSync(
-    new URL('../../config.json', import.meta.url).pathname,
-    // '../../config.json',
+    new URL('../config.json', import.meta.url).pathname,
     JSON.stringify({
       ...config(),
       destination
@@ -35,15 +35,15 @@ async function setDir () {
   return destination
 }
 
-// directory to save files
+// ----
 async function getSetDir (options = { username: '', set: false }) {
   const basePath = options.set || !config().destination
     ? await setDir()
     : config().destination
-
   return path.resolve(basePath, options.username)
 }
 
+// ----
 function checkDirExists (location) {
   if (!fs.existsSync(location) || !fs.readdirSync(location).length) {
     return false
@@ -51,6 +51,7 @@ function checkDirExists (location) {
   return true
 }
 
+// ----
 function upsertDir (location) {
   if (!fs.existsSync(location)) {
     fs.mkdirSync(location, {
@@ -59,10 +60,12 @@ function upsertDir (location) {
   }
 }
 
+// ----
 function openDir (location) {
   execSync(`open ${location}`)
 }
 
+// ----
 function removeDir (location) {
   fs.readdirSync(location).forEach(function (file) {
     fs.rmSync(path.resolve(location, file))
