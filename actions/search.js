@@ -4,7 +4,8 @@ import https from 'https'
 import path from 'path'
 import fs from 'fs'
 import { spawn } from 'child_process'
-import { getSetDir, upsertDir } from './directories.js'
+import inquirer from 'inquirer'
+import { whichDir, upsertDir, rmDir } from './directories.js'
 import { getSetKey } from './keys.js'
 import keyboard from './keyboard.js'
 import cursor from './cursor.js'
@@ -12,6 +13,8 @@ import utils from './utils.js'
 
 const { stdout } = process
 const { rows, columns } = stdout
+
+// TODO: change process.exit() to await mainMenu()
 
 // ----
 process.on('SIGINT', () => {
@@ -170,11 +173,19 @@ function showOne (destination, filePath, opts) {
 }
 
 // ----
-async function init (username = ' ') {
+async function init () {
   const apiKey = await getSetKey()
 
+  const username = (await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'username',
+      message: 'type a username to search'
+    }
+  ])).username
+
   const getDestination = async () => { 
-    const dir = await getSetDir({ username })
+    const dir = await whichDir({ username })
     upsertDir(dir)
     readline.createInterface({
       input: process.stdin,
@@ -185,7 +196,7 @@ async function init (username = ' ') {
   
   const destination = await getDestination()
   getAll(username, apiKey, destination)
-  
 }
 
+// init()
 export default init

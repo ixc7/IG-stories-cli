@@ -2,7 +2,7 @@ import inquirer from 'inquirer'
 import utils from '../actions/utils.js'
 import { checkRepeat } from '../actions/inquirer-actions.js'
 import search from '../actions/search.js'
-import { getSetDir, openDir, removeDir, checkDirExists } from '../actions/directories.js'
+import { whichDir, openDir, rmDir, dirExists } from '../actions/directories.js'
 import { removeFavorite } from '../actions/favorites.js'
 import mainMenu from './main-menu.js'
 
@@ -53,22 +53,22 @@ export default async function favoritesMenu () {
     ])
 
     const username = answers.username
-    const location = await getSetDir({ username })
+    const location = await whichDir({ username })
 
     const actions = {
       async getStories () {
         await search(username)
       },
       getDownloads () {
-        if (checkDirExists(location)) {
+        if (dirExists(location)) {
           openDir(location)
         } else {
           console.log('no downloads found')
         }
       },
       removeDownloads () {
-        if (checkDirExists(location)) {
-          removeDir(location)
+        if (dirExists(location)) {
+          rmDir(location)
         } else {
           console.log('no downloads found')
         }

@@ -17,7 +17,6 @@ export default async function mainMenu () {
         {
           value: 'historyMenu',
           name: 'view downloads'
-          // name: 'view search history'
         },
         {
           value: 'configMenu',

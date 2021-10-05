@@ -3,7 +3,7 @@ import { checkConfirm, checkRepeat } from '../actions/inquirer-actions.js'
 import { getSetKey, unsetKey } from '../actions/keys.js'
 // import { removeAllFavorites } from '../actions/favorites.js'
 import { unsetHistory } from '../actions/history.js'
-import { getSetDir } from '../actions/directories.js'
+import { whichDir } from '../actions/directories.js'
 import mainMenu from './main-menu.js'
 
 export default async function configMenu () {
@@ -25,6 +25,10 @@ export default async function configMenu () {
           {
             value: 'clearHistory',
             name: 'clear history'
+          },
+          {
+            value: 'back',
+            name: 'back'
           }
         ]
       }
@@ -41,10 +45,8 @@ export default async function configMenu () {
       }
     },
     async changeDownloadsFolder () {
-      // TODO: refactor to check confirm after user changes value
-      //       add a back button
       if (await checkConfirm()) {
-        await getSetDir({
+        await whichDir({
           set: true
         })
       }
@@ -53,6 +55,9 @@ export default async function configMenu () {
       if (await checkConfirm()) {
         unsetHistory()
       }
+    },
+    async back () {
+      await mainMenu()
     }
   }
 

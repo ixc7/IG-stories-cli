@@ -1,3 +1,4 @@
+/* eslint-disable brace-style */
 import fs from 'fs'
 import path from 'path'
 import inquirer from 'inquirer'
@@ -36,7 +37,7 @@ async function setDir () {
 }
 
 // ----
-async function getSetDir (options = { username: '', set: false }) {
+async function whichDir (options = { username: '', set: false }) {
   const basePath = options.set || !config().destination
     ? await setDir()
     : config().destination
@@ -44,11 +45,38 @@ async function getSetDir (options = { username: '', set: false }) {
 }
 
 // ----
-function checkDirExists (location) {
+function dirExists (location) {
   if (!fs.existsSync(location) || !fs.readdirSync(location).length) {
     return false
   }
   return true
+}
+
+// TODO: replace dirExists with dirStats
+// ----
+function dirStats (location) {
+  try {
+    const dir = fs.readdirSync(location)
+    const stats = {
+      isDir: true,
+      exists: true,
+      empty: !dir.length
+    }
+    return {
+      valid: !stats.empty,
+      stats
+    }
+  }
+  catch (err) {
+    return {
+      valid: false,
+      stats: {
+        isFile: err.code === 'ENOTDIR',
+        exists: err.code !== 'ENOENT',
+        empty: true
+      }
+    }
+  }
 }
 
 // ----
@@ -66,11 +94,11 @@ function openDir (location) {
 }
 
 // ----
-function removeDir (location) {
+function rmDir (location) {
   fs.readdirSync(location).forEach(function (file) {
     fs.rmSync(path.resolve(location, file))
   })
   fs.rmdirSync(location)
 }
 
-export { getSetDir, openDir, removeDir, upsertDir, checkDirExists }
+export { whichDir, openDir, rmDir, upsertDir, dirExists, dirStats }
