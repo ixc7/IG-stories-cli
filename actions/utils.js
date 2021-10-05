@@ -23,11 +23,8 @@ function randomStr (input = '') {
 }
 
 // read config file
-// TODO: just import it.
 function config () {
   return JSON.parse(
-    // fs.readFileSync(path.resolve(path.resolve(), '../config.json'), {
-    // fs.readFileSync('../config.json', {
     fs.readFileSync(new URL('../config.json', import.meta.url).pathname, {
       encoding: 'utf-8'
     })
@@ -91,7 +88,7 @@ function progress (response) {
   const spacing = ' '.repeat(Math.floor(stdout.columns / 4))
   if (isNaN(total)) return false
   const bar = new Progress(`${spacing}[:bar]`, {
-    complete: '\u001b[41m \u001b[0m',
+    complete: '\u001b[102m \u001b[0m',
     incomplete: '_',
     width: Math.floor(stdout.columns / 2),
     total

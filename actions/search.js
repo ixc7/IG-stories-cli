@@ -7,6 +7,7 @@ import { spawn } from 'child_process'
 import { getSetDir, upsertDir } from './directories.js'
 import { getSetKey } from './keys.js'
 import keyboard from './keyboard.js'
+import cursor from './cursor.js'
 import utils from './utils.js'
 
 const { stdout } = process
@@ -24,9 +25,10 @@ process.on('SIGINT', () => {
 
 // ----
 function getAll (username, apiKey, destination) {
-  utils.centerText(columns, 0, `searching for '${username}'`)
+  cursor.hide()
   keyboard.listen()
   keyboard.sigintListener()
+  utils.centerText(columns, 0, `searching for '${username}'`)
 
   const query = new URL('/clients/api/ig/ig_profile', 'https://instagram-bulk-profile-scrapper.p.rapidapi.com')
   query.searchParams.set('ig', username)
@@ -75,6 +77,7 @@ function getAll (username, apiKey, destination) {
         })
       } else {
         utils.centerText(columns, 0, 'nothing found')
+        cursor.show()
         process.exit(0)
       }
     })
@@ -86,12 +89,14 @@ function getAll (username, apiKey, destination) {
 function getOne (destination, opts) {
   if (opts.int === opts.max) {
     utils.centerText(columns, 0, 'done')
+    cursor.show()
     process.exit(0)
   }
 
-  utils.centerText(columns, 0, `loading preview ${opts.int + 1} of ${opts.max}`)
+  cursor.hide()
   keyboard.reload()
   keyboard.sigintListener()
+  utils.centerText(columns, 0, `loading preview ${opts.int + 1} of ${opts.max}`)
 
   const current = opts.data[opts.int]
   const fileName = utils.makeName(opts.username, current.type)
@@ -100,6 +105,7 @@ function getOne (destination, opts) {
   const req = https.request(current.url)
 
   req.on('response', (res) => {
+    stdout.write('\n')
     utils.progress(res)
     res.pipe(stream)
     res.on('end', () => {
@@ -111,9 +117,10 @@ function getOne (destination, opts) {
 
 // ----
 function showOne (destination, filePath, opts) {
-  utils.centerText(columns, 0, 'y: keep, n: skip, q: quit')
+  cursor.hide()
   keyboard.reload()
   keyboard.sigintListener()
+  utils.centerText(columns, 0, 'y: keep, n: skip, q: quit')
 
   const rendered = spawn(
     new URL('../vendor/timg', import.meta.url).pathname,
@@ -133,20 +140,17 @@ function showOne (destination, filePath, opts) {
     },
     n: () => {
       signal = 'skip'
-      // fs.rm(filePath, () => {})
-      // fs.rm(filePath, () => { rendered.kill() })
       fs.rmSync(filePath)
       rendered.kill()
     }
   })
 
   rendered.on('close', () => {
+    cursor.hide()
     function getNext () {
       getOne(destination, {
-        username: opts.username,
-        data: opts.data,
-        int: opts.int + 1,
-        max: opts.max,
+        ...opts,
+        int: opts.int + 1
       })
     }
     if (signal === 'skip' || signal === 'save') {
@@ -157,7 +161,6 @@ function showOne (destination, filePath, opts) {
       keyboard.keyListener({
         y: () => getNext(),
         n: () => {
-          // fs.rm(filePath, () => { getNext() })
           fs.rmSync(filePath)
           getNext()
         }
@@ -170,18 +173,18 @@ function showOne (destination, filePath, opts) {
 async function init (username = ' ') {
   const apiKey = await getSetKey()
 
-  const getDownloadsDir = async () => { 
+  const getDestination = async () => { 
     const dir = await getSetDir({ username })
+    upsertDir(dir)
     readline.createInterface({
       input: process.stdin,
       output: process.stdout
     })
-    upsertDir(dir)
     return dir
   }
   
-  const downloadsDir = await getDownloadsDir()
-  getAll(username, apiKey, downloadsDir)
+  const destination = await getDestination()
+  getAll(username, apiKey, destination)
   
 }
 
