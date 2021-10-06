@@ -48,6 +48,7 @@ function getAll (username, apiKey, destination) {
 
     res.on('end', function () {
       const dataObj = JSON.parse(dataStr, 0, 2)
+      
 
       if (dataObj[0]?.story?.data?.length) {
         const filesList = dataObj[0].story.data.map(function (item) {
@@ -78,6 +79,7 @@ function getAll (username, apiKey, destination) {
       } else {
         display.txt.center('nothing found')
         display.cursor.show()
+        console.log(dataObj)
         process.exit(0)
       }
     })
@@ -148,6 +150,7 @@ function showOne (destination, filePath, opts) {
   rendered.on('close', () => {
     display.cursor.hide()
     function getNext () {
+      process.removeAllListeners('SIGINT')
       getOne(destination, {
         ...opts,
         int: opts.int + 1

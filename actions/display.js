@@ -21,6 +21,7 @@ const cursor = {
 // ----
 const term = {
   reset () {
+    cursor.show()
     stdout.write('\u001b[0m\u001b[3J\u001b[1J')
     console.clear()
   }
