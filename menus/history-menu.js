@@ -2,11 +2,18 @@ import inquirer from 'inquirer'
 import utils from '../actions/utils.js'
 import { checkConfirm, checkRepeat } from '../actions/inquirer-actions.js'
 import search from '../actions/search.js'
-import { whichDir, openDir, rmDir, dirExists } from '../actions/directories.js'
+import { whichDir, openDir, rmDir, dirExists, dirStats } from '../actions/directories.js'
 import mainMenu from './main-menu.js'
 const { config } = utils
 
+// ----
+// TODO: refactor to read from downloads dir
+//       instead of reading/writing config.json
+//       folders are named as instagram usernames already.
+
 export default async function historyMenu () {
+  // ----
+  // TODO: change to dirStats(config().destination).contents
   if (config().history.length) {
     const answers = await inquirer.prompt([
       {
@@ -36,9 +43,6 @@ export default async function historyMenu () {
             value: 'back',
             name: 'back'
           }
-          // TODO: refactor to read from downloads dir
-          //       instead of reading/writing config.json
-          //       folders are named as instagram usernames already.
         ]
       }
     ])
@@ -51,9 +55,9 @@ export default async function historyMenu () {
       },
       async getDownloads () {
         const location = await whichDir({ username })
-
-        // TODO: also check if folder is empty
-        if (dirExists(location)) {
+        // ----
+        // if (dirExists(location)) {
+        if (dirStats(location).valid) {
           openDir(location)
         } else {
           console.log('no downloads found')

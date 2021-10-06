@@ -44,27 +44,27 @@ async function whichDir (options = { username: '', set: false }) {
   return path.resolve(basePath, options.username)
 }
 
-// ----
-function dirExists (location) {
-  if (!fs.existsSync(location) || !fs.readdirSync(location).length) {
-    return false
-  }
-  return true
-}
-
 // TODO: replace dirExists with dirStats
+//  TODO: replace try catch with regular control flow
+//        fs.existsSync()
+
 // ----
-function dirStats (location) {
+function dirStats (path) {
+  const exists = fs.existsSync(path)
+  
   try {
-    const dir = fs.readdirSync(location)
+    const dir = fs.readdirSync(path)
     const stats = {
       isDir: true,
       exists: true,
-      empty: !dir.length
+      empty: !dir.length,
+      contents: !dir.length ? false : dir
     }
+    
     return {
       valid: !stats.empty,
-      stats
+      stats,
+      path
     }
   }
   catch (err) {
@@ -73,19 +73,27 @@ function dirStats (location) {
       stats: {
         isFile: err.code === 'ENOTDIR',
         exists: err.code !== 'ENOENT',
-        empty: true
-      }
+        empty: true,
+        contents: false
+      },
+      path
     }
   }
 }
 
 // ----
 function upsertDir (location) {
-  if (!fs.existsSync(location)) {
+  if (!dirStats(location).exists) {
     fs.mkdirSync(location, {
       recursive: true
     })
   }
+}
+
+// ----
+function dirExists (location) {
+  const { exists, isFile } = dirStats(location).stats
+  return exists && !isFile
 }
 
 // ----

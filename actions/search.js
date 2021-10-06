@@ -1,37 +1,34 @@
-/* eslint-disable */
 import readline from 'readline'
 import https from 'https'
-import path from 'path'
+// import path from 'path'
 import fs from 'fs'
+import { stdout } from 'process'
 import { spawn } from 'child_process'
 import inquirer from 'inquirer'
-import { whichDir, upsertDir, rmDir } from './directories.js'
+
+import { whichDir, upsertDir /* , rmDir */ } from './directories.js'
 import { getSetKey } from './keys.js'
 import keyboard from './keyboard.js'
-import cursor from './cursor.js'
+import display from './display.js'
 import utils from './utils.js'
 
-const { stdout } = process
+// TODO: change process.exit() to await mainMenu()
+// import mainMenu from '../menus/main-menu.js'
+
 const { rows, columns } = stdout
 
-// TODO: change process.exit() to await mainMenu()
-
-// ----
-process.on('SIGINT', () => {
-  const cleanup = spawn('tput', ['reset'])
-  cleanup.stdout.pipe(stdout)
-  cleanup.on('close', () => {
-    utils.centerText(columns, 0, 'exit')
-    process.exit(0)
-  })
-})
+function sigintExit () {
+  display.term.reset()
+  display.txt.center('SIGINT exit')
+  process.exit(0)
+}
 
 // ----
 function getAll (username, apiKey, destination) {
-  cursor.hide()
-  keyboard.listen()
-  keyboard.sigintListener()
-  utils.centerText(columns, 0, `searching for '${username}'`)
+  display.cursor.hide()
+  keyboard.open()
+  keyboard.sigintListener(sigintExit)
+  display.txt.center(`searching for '${username}'`)
 
   const query = new URL('/clients/api/ig/ig_profile', 'https://instagram-bulk-profile-scrapper.p.rapidapi.com')
   query.searchParams.set('ig', username)
@@ -47,7 +44,7 @@ function getAll (username, apiKey, destination) {
     res.on('data', function (chunk) {
       dataStr += chunk.toString('utf8')
     })
-    utils.progress(res)
+    display.progress(res)
 
     res.on('end', function () {
       const dataObj = JSON.parse(dataStr, 0, 2)
@@ -76,11 +73,11 @@ function getAll (username, apiKey, destination) {
           username,
           data: filesList,
           int: 0,
-          max: filesList.length,
+          max: filesList.length
         })
       } else {
-        utils.centerText(columns, 0, 'nothing found')
-        cursor.show()
+        display.txt.center('nothing found')
+        display.cursor.show()
         process.exit(0)
       }
     })
@@ -91,15 +88,15 @@ function getAll (username, apiKey, destination) {
 // ----
 function getOne (destination, opts) {
   if (opts.int === opts.max) {
-    utils.centerText(columns, 0, 'done')
-    cursor.show()
+    display.txt.center('done')
+    display.cursor.show()
     process.exit(0)
   }
 
-  cursor.hide()
+  display.cursor.hide()
   keyboard.reload()
-  keyboard.sigintListener()
-  utils.centerText(columns, 0, `loading preview ${opts.int + 1} of ${opts.max}`)
+  keyboard.sigintListener(sigintExit)
+  display.txt.center(`loading preview ${opts.int + 1} of ${opts.max}`)
 
   const current = opts.data[opts.int]
   const fileName = utils.makeName(opts.username, current.type)
@@ -109,7 +106,7 @@ function getOne (destination, opts) {
 
   req.on('response', (res) => {
     stdout.write('\n')
-    utils.progress(res)
+    display.progress(res)
     res.pipe(stream)
     res.on('end', () => {
       showOne(destination, filePath, opts)
@@ -120,10 +117,10 @@ function getOne (destination, opts) {
 
 // ----
 function showOne (destination, filePath, opts) {
-  cursor.hide()
+  display.cursor.hide()
   keyboard.reload()
-  keyboard.sigintListener()
-  utils.centerText(columns, 0, 'y: keep, n: skip, q: quit')
+  keyboard.sigintListener(() => display.term.reset())
+  display.txt.center('y: keep, n: skip, q: quit')
 
   const rendered = spawn(
     new URL('../vendor/timg', import.meta.url).pathname,
@@ -149,7 +146,7 @@ function showOne (destination, filePath, opts) {
   })
 
   rendered.on('close', () => {
-    cursor.hide()
+    display.cursor.hide()
     function getNext () {
       getOne(destination, {
         ...opts,
@@ -160,7 +157,7 @@ function showOne (destination, filePath, opts) {
       getNext()
     } else {
       keyboard.reload()
-      keyboard.sigintListener()
+      keyboard.sigintListener(sigintExit)
       keyboard.keyListener({
         y: () => getNext(),
         n: () => {
@@ -184,7 +181,7 @@ async function init () {
     }
   ])).username
 
-  const getDestination = async () => { 
+  const getDestination = async () => {
     const dir = await whichDir({ username })
     upsertDir(dir)
     readline.createInterface({
@@ -193,10 +190,10 @@ async function init () {
     })
     return dir
   }
-  
+
   const destination = await getDestination()
   getAll(username, apiKey, destination)
 }
 
-// init()
+init()
 export default init

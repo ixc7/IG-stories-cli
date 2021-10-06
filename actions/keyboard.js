@@ -1,7 +1,8 @@
+import { stdin, stdout } from 'process'
+import { spawn } from 'child_process'
 import readline from 'readline'
-const { stdin } = process
 
-function listen () {
+function open () {
   readline.emitKeypressEvents(stdin)
   stdin.setRawMode(true)
 }
@@ -12,7 +13,7 @@ function close () {
 
 function reload () {
   close()
-  listen()
+  open()
 }
 
 function keyListener (actions = {}) {
@@ -21,15 +22,22 @@ function keyListener (actions = {}) {
   })
 }
 
-function sigintListener (str = 'q') {
+function sigintListener (
+  action = () => { process.exit(0) },
+  str = 'q'
+) {
+  process.on('SIGINT', () => {
+    const cleanup = spawn('tput', ['reset'])
+    cleanup.stdout.pipe(stdout)
+    cleanup.on('close', () => action())
+  })
   keyListener({
     [str]: () => process.kill(process.pid, 'SIGINT')
   })
 }
 
 export default {
-  // open,
-  listen,
+  open,
   close,
   reload,
   keyListener,
