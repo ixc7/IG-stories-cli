@@ -1,10 +1,12 @@
-/*
+/* eslint-disable */
 import readline from 'readline'
+import https from 'https'
 import fs from 'fs'
 import { stdout } from 'process'
 import { spawn } from 'child_process'
 import inquirer from 'inquirer'
-import { whichDir, upsertDir, rmDir } from '../actions/directories.js'
+
+import { whichDir, upsertDir /* , rmDir */ } from '../actions/directories.js'
 import { getSetKey } from '../actions/keys.js'
 import keyboard from '../actions/keyboard.js'
 import display from '../actions/display.js'
@@ -14,87 +16,80 @@ const { rows, columns } = stdout
 
 function sigintExit () {
   display.term.reset()
-  display.txt.center('SIGINT exit')
+  console.log('SIGINT EXITTTTTTTTTT')
+  // display.txt.center('SIGINT exit')
   process.exit(0)
 }
-*/
 
-import https from 'https'
-
-
-// ---- get search results
-export default function search (username, apiKey) {
-  // ---- promisify
-  return new Promise((resolve, reject) => {
-    // ---- body
-    const query = new URL('/clients/api/ig/ig_profile', 'https://instagram-bulk-profile-scrapper.p.rapidapi.com')
-    query.searchParams.set('ig', username)
-    query.searchParams.set('response_type', 'story')
-
-    // ---- request
-    const req = https.request(query.href)
-
-    // ---- headers
-    req.setHeader('x-rapidapi-host', 'instagram-bulk-profile-scrapper.p.rapidapi.com')
-    req.setHeader('x-rapidapi-key', apiKey)
-
-    // ---- handle response
-    req.on('response', function (res) {
-
-      // ---- capture response
-      let dataStr = ''
-      res.on('data', function (chunk) {
-        dataStr += chunk.toString('utf8')
-      })
-
-      res.on('end', function () {
-        const allMedia = JSON.parse(dataStr, 0, 2)
-        
-        // ---- if we received a valid response, format it
-        if (allMedia[0]?.story?.data?.length) {
-          const files = allMedia[0].story.data.map(function (item) {
-            let formatted = {}
-            // ---- is image
-            if (item.media_type === 1) {
-              formatted = {
-                url: item.image_versions2.candidates[0].url,
-                type: 'jpg',
-                display: 'image'
-              }
-            }
-            // ---- is video
-            else if (item.media_type === 2) {
-              formatted = {
-                url: item.video_versions[0].url,
-                type: 'mp4',
-                display: 'video'
-              }
-            }
-            return formatted
-          })
-          // ---- done
-          resolve(files)  
-        }
-
-        // ---- exit if we didn't receive anything usable
-        else {
-          // ---- done
-          reject()
-        }
-      })
-    })
-
-    req.end()
+// ----
+function getAll (username, apiKey, destination) {
+  display.cursor.hide()
+  keyboard.open()
+  keyboard.sigintListener(() => {
+    console.log('GETALL FUCK YOU')
+    process.exit(0)
+    // sigintExit()
   })
+  console.log(`searching for '${username}'`)
+  // display.txt.center(`searching for '${username}'`)
+
+  const query = new URL('/clients/api/ig/ig_profile', 'https://instagram-bulk-profile-scrapper.p.rapidapi.com')
+  query.searchParams.set('ig', username)
+  query.searchParams.set('response_type', 'story')
+
+  const req = https.request(query.href)
+  req.setHeader('x-rapidapi-host', 'instagram-bulk-profile-scrapper.p.rapidapi.com')
+  req.setHeader('x-rapidapi-key', apiKey)
+
+  req.on('response', function (res) {
+    let dataStr = ''
+
+    res.on('data', function (chunk) {
+      dataStr += chunk.toString('utf8')
+    })
+    display.progress(res)
+
+    res.on('end', function () {
+      const dataObj = JSON.parse(dataStr, 0, 2)
+      
+
+      if (dataObj[0]?.story?.data?.length) {
+        const filesList = dataObj[0].story.data.map(function (item) {
+          let itemInfo = {}
+
+          if (item.media_type === 1) {
+            itemInfo = {
+              url: item.image_versions2.candidates[0].url,
+              type: 'jpg',
+              display: 'image'
+            }
+          } else if (item.media_type === 2) {
+            itemInfo = {
+              url: item.video_versions[0].url,
+              type: 'mp4',
+              display: 'video'
+            }
+          }
+          return itemInfo
+        })
+
+        getOne(destination, {
+          username,
+          data: filesList,
+          int: 0,
+          max: filesList.length
+        })
+      } else {
+        console.log('nothing found')
+        // display.txt.center('nothing found')
+        display.cursor.show()
+        console.log(dataObj)
+        process.exit(0)
+      }
+    })
+  })
+  req.end()
 }
-
-
-
-
-
-
-/*
-
 
 // ----
 function getOne (destination, opts) {
@@ -235,5 +230,3 @@ async function init () {
 
 init()
 export default init
-
-*/

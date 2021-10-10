@@ -28,3 +28,13 @@ async function init () {
   // getAll(username, apiKey, destination)
 
 }
+
+
+
+// function sigintExit () {
+  // display.term.reset()
+  // console.log('SIGINT EXITTTT..TTTTTT')
+  // display.txt.center('SIGINT exit')
+  // process.exit(0)
+// }
+

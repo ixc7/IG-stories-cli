@@ -1,6 +1,4 @@
 
-// showOne = render
-
 function render (filePath) {
 
   const timg = spawn(
@@ -13,11 +11,7 @@ function render (filePath) {
   )
   
   timg.stdout.pipe(stdout)
-  // .unpipe() ??
-
   timg.on('close', () => process.exit(0))
 
-  // process.on('message', (msg) => {})
-  // process.send({})
-
 }
+

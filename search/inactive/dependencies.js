@@ -12,10 +12,3 @@ import display from '../actions/display.js'
 import utils from '../actions/utils.js'
 
 const { rows, columns } = stdout
-
-// function sigintExit () {
-  // display.term.reset()
-  // console.log('SIGINT EXITTTT..TTTTTT')
-  // display.txt.center('SIGINT exit')
-  // process.exit(0)
-// }
