@@ -1,7 +1,5 @@
 import https from 'https'
 
-// ---- SEARCH: get/format/return search results from rapidapi ---- //
-
 export default function search (username, apiKey) {
   // ---- promisify
   return new Promise((resolve, reject) => {
