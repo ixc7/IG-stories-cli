@@ -1,29 +1,10 @@
-/*
-import readline from 'readline'
-import fs from 'fs'
-import { stdout } from 'process'
-import { spawn } from 'child_process'
-import inquirer from 'inquirer'
-import { whichDir, upsertDir, rmDir } from '../actions/directories.js'
-import { getSetKey } from '../actions/keys.js'
-import keyboard from '../actions/keyboard.js'
-import display from '../actions/display.js'
-import utils from '../actions/utils.js'
-
-const { rows, columns } = stdout
-
-function sigintExit () {
-  display.term.reset()
-  display.txt.center('SIGINT exit')
-  process.exit(0)
-}
-*/
-
 import https from 'https'
 
+// ---- SEARCH: get/format/return search results from rapidapi ---- //
 
-// ---- get search results
 export default function search (username, apiKey) {
+  console.log(`searching for ${username}`)
+
   // ---- promisify
   return new Promise((resolve, reject) => {
     // ---- body
@@ -79,7 +60,7 @@ export default function search (username, apiKey) {
         // ---- exit if we didn't receive anything usable
         else {
           // ---- done
-          reject()
+          reject('nothing found')
         }
       })
     })
@@ -87,153 +68,3 @@ export default function search (username, apiKey) {
     req.end()
   })
 }
-
-
-
-
-
-
-/*
-
-
-// ----
-function getOne (destination, opts) {
-  if (opts.int === opts.max) {
-    console.log('done')
-    // display.txt.center('done')
-    display.cursor.show()
-    process.exit(0)
-  }
-  // TODO: abort req (?)
-  display.cursor.hide()
-  keyboard.reload()
-  keyboard.sigintListener(() => {
-    console.log('GET 1')
-    console.log(`lYOU DIED ON ${opts.int + 1} of ${opts.max}`)
-    process.exit(0)
-    // rendered.stdout.unpipe(stdout)
-  })
-  console.log(`loading preview ${opts.int + 1} of ${opts.max}`)
-  // display.txt.center(`loading preview ${opts.int + 1} of ${opts.max}`)
-
-  const current = opts.data[opts.int]
-  const fileName = utils.makeName(opts.username, current.type)
-  const filePath = new URL(`${destination}/${fileName}`, import.meta.url).pathname
-  const stream = fs.createWriteStream(filePath)
-  const req = https.request(current.url)
-
-  req.on('response', (res) => {
-    stdout.write('\n')
-    display.progress(res)
-    res.pipe(stream)
-    // TODO: ANOTHER SIGINT LISTENER TO UNPIPE THIS TOO??
-
-    res.on('end', () => {
-      showOne(destination, filePath, opts)
-    })
-  })
-  
-  req.end()
-}
-
-
-
-// ----
-function showOne (destination, filePath, opts) {
-  display.cursor.hide()
-  keyboard.reload()
-  display.txt.center('y: keep, n: skip, q: quit')
-  // keyboard.sigintListener(() => display.term.reset())
-
-  const rendered = spawn(
-    new URL('../vendor/timg', import.meta.url).pathname,
-    [
-      `-g ${columns}x${rows - 4}`,
-      '--center',
-      filePath
-    ]
-  )
-  rendered.stdout.pipe(stdout)
-
-  keyboard.sigintListener(() => {
-    rendered.stdout.unpipe(stdout)
-    console.log('YOU DID ITY frum daddy YOU DID IT. thnx1')
-    process.exit(0)
-  })
-  
-  let signal = ''
-  keyboard.keyListener({
-    y: () => {
-      signal = 'save'
-      rendered.kill()
-    },
-    n: () => {
-      signal = 'skip'
-      fs.rmSync(filePath)
-      rendered.kill()
-    }
-  })
-
-  rendered.on('close', () => {
-    display.cursor.hide()
-    
-    function getNext () {
-      process.removeAllListeners('SIGINT')
-      getOne(destination, {
-        ...opts,
-        int: opts.int + 1
-      })
-    }
-    
-    if (signal === 'skip' || signal === 'save') {
-      getNext()
-    } else {
-      keyboard.reload()
-      keyboard.sigintListener(() => {
-          rendered.stdout.unpipe(stdout)
-          console.log('YOU DID ITY AGAIN IN HELL DADDU')
-              process.exit(0)
-
-      })
-
-      keyboard.keyListener({
-        y: () => getNext(),
-        n: () => {
-          fs.rmSync(filePath)
-          getNext()
-        }
-      })
-    }
-  })
-}
-
-// ----
-async function init () {
-  const apiKey = await getSetKey()
-
-  const username = (await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'username',
-      message: 'type a username to search'
-    }
-  ])).username
-
-  const getDestination = async () => {
-    const dir = await whichDir({ username })
-    upsertDir(dir)
-    readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    })
-    return dir
-  }
-
-  const destination = await getDestination()
-  getAll(username, apiKey, destination)
-}
-
-init()
-export default init
-
-*/

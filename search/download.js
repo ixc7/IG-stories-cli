@@ -1,19 +1,27 @@
-function download ( ... ) {
 
-  const fileStream = fs.createWriteStream(filePath)
-  const req = https.request(current.url)
-  
-  req.on('response', (res) => {
+import https from 'https'
+import fs from 'fs'
+import display from '../actions/display.js'
+import utils from '../actions/utils.js'
 
-    res.pipe(fileStream)
-    res.on('end', () => {
+export default function download (username, item, dir) {
+  return new Promise((resolve, reject) => {
+    const filePath = new URL(
+      `${dir}/${utils.makeName(username, item.type)}`,
+      import.meta.url
+    ).pathname
+    const writeStream = fs.createWriteStream(filePath)
+    const req = https.request(item.url)
 
-      render( ... )
+    req.on('response', (res) => {
+      display.progress(res)
+      res.pipe(writeStream)
 
-      process.exit(0)
+      res.on('end', () => {
+        resolve(filePath)
+      })
     })
-  })
-  
-  req.end()
-}
 
+    req.end()
+  })
+}
