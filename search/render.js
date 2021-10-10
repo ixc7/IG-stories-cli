@@ -1,4 +1,6 @@
 import { spawn } from 'child_process'
+// import readline from 'readline'
+import display from '../actions/display.js'
   
 const timg = spawn(
   new URL('../vendor/timg', import.meta.url).pathname,
@@ -11,12 +13,12 @@ const timg = spawn(
 
 timg.stdout.pipe(process.stdout)
 
-process.on('message', (m) => {
-  console.log('exit render')
-  process.exit(0)
-})
-
 timg.on('close', () => {
   console.log('done, press any key to exit')
 })
 
+process.on('message', (m) => {
+  display.term.reset()
+  console.log('render exiting on keypress')
+  process.exit(0)
+})
