@@ -1,6 +1,7 @@
 import readline from 'readline'
 import search from './search.js'
 import download from './download.js'
+import render from './render.js'
 import { getSetKey } from '../actions/keys.js'
 import { whichDir, upsertDir } from '../actions/directories.js'
 
@@ -15,12 +16,15 @@ const getDestination = async (username) => {
 }
 
 async function init () {
+  console.log('searching')
   search('alice', await getSetKey())
   .then(async (data) => {
-  
-    console.log(data)
-    download('alice', data[0], await getDestination('alice'))
-    .then((file) => console.log(file))
+    console.log('downloading')
+    download('alice', data[2], await getDestination('alice'))
+    .then((file) => {
+      console.log('rendering')
+      render(file)
+    })
   })  
   .catch((err) => console.log(err))
 }

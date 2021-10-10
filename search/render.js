@@ -1,16 +1,17 @@
+import { spawn } from 'child_process'
 
-function render (filePath) {
+export default function render (filePath) {
 
   const timg = spawn(
     new URL('../vendor/timg', import.meta.url).pathname,
     [
-      `-g ${columns}x${rows - 4}`,
+      `-g ${process.stdout.columns}x${process.stdout.rows - 4}`,
       '--center',
       filePath
     ]
   )
   
-  timg.stdout.pipe(stdout)
+  timg.stdout.pipe(process.stdout)
   timg.on('close', () => process.exit(0))
 
 }

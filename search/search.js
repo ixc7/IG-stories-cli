@@ -3,8 +3,6 @@ import https from 'https'
 // ---- SEARCH: get/format/return search results from rapidapi ---- //
 
 export default function search (username, apiKey) {
-  console.log(`searching for ${username}`)
-
   // ---- promisify
   return new Promise((resolve, reject) => {
     // ---- body
