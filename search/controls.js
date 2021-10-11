@@ -6,8 +6,9 @@ import { whichDir, upsertDir } from '../actions/directories.js'
 import display from '../actions/display.js'
 import readline from 'readline'
 
+const index = parseInt(process.argv[2])
 
-const init = async () => {
+// const init = async () => {
 
   console.log('checking env variables')
   const apiKey = await getSetKey()
@@ -23,8 +24,11 @@ const init = async () => {
   search('alice', apiKey)
   .then(async (data) => {
   
+    console.log(data, data[index], data.length)
+    
     console.log('downloading')
-    download('alice', data[0], destination)
+    
+    download('alice', data[index], destination)
     .then((file) => {
       console.log('rendering')
 
@@ -39,15 +43,22 @@ const init = async () => {
 
       render.on('close', () => {
         console.log('parent exiting on render closed')
-        process.exit(0)
+        if(index === data.length - 1) {
+          process.send({ next: 'EXIT' })
+          process.exit(0)
+        } else {
+          process.send({ next: parseInt(index + 1)})
+          process.exit(0)
+        }
       })
       
     })
   })  
-  .catch((err) => console.log(err))
-}
+  .catch((err) => console.log('GOT ERROR', err))
+  
+// }
 
-init()
+// init()
 
 // q listener - abort search/download, kill render, exit
 // n listener - abort download/rm file, kill render/rm file, continue
