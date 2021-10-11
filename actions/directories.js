@@ -37,21 +37,22 @@ async function setDir () {
 }
 
 // ----
-async function whichDir (options = { username: '', set: false }) {
+async function whichDir (options = { username: false, set: false }) {
   const basePath = options.set || !config().destination
     ? await setDir()
     : config().destination
-  return path.resolve(basePath, options.username)
+  if (options.username) return path.resolve(basePath, options.username)
+  return basePath
 }
 
-// TODO: replace dirExists with dirStats
-//  TODO: replace try catch with regular control flow
-//        fs.existsSync()
+//  TODO: replace dirExists with dirStats
+//  TODO: don't use try/catch for control flow
+//        const exists = fs.existsSync()
+//        if (exists) { ... }
 
 // ----
 function dirStats (path) {
-  const exists = fs.existsSync(path)
-  
+  // const exists = fs.existsSync(path)
   try {
     const dir = fs.readdirSync(path)
     const stats = {
@@ -60,7 +61,6 @@ function dirStats (path) {
       empty: !dir.length,
       contents: !dir.length ? false : dir
     }
-    
     return {
       valid: !stats.empty,
       stats,

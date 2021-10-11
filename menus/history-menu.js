@@ -1,7 +1,7 @@
 import inquirer from 'inquirer'
 import utils from '../actions/utils.js'
 import { checkConfirm, checkRepeat } from '../actions/inquirer-actions.js'
-import search from '../actions/search.js'
+// import search from '../actions/search.js'
 import { whichDir, openDir, rmDir, dirExists, dirStats } from '../actions/directories.js'
 import mainMenu from './main-menu.js'
 const { config } = utils
@@ -27,10 +27,10 @@ export default async function historyMenu () {
         name: 'selection',
         message: 'select an action',
         choices: [
-          {
-            value: 'getStories',
-            name: 'get latest stories'
-          },
+          // {
+            // value: 'getStories',
+            // name: 'get latest stories'
+          // },
           {
             value: 'getDownloads',
             name: 'view downloaded stories'
@@ -50,9 +50,9 @@ export default async function historyMenu () {
     const { username, selection } = answers
 
     const actions = {
-      async getStories () {
-        await search(username)
-      },
+      // async getStories () {
+        // await search(username)
+      // },
       async getDownloads () {
         const location = await whichDir({ username })
         // ----

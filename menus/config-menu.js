@@ -1,10 +1,8 @@
 import inquirer from 'inquirer'
-import { checkConfirm, checkRepeat } from '../actions/inquirer-actions.js'
+import { checkConfirm } from '../actions/inquirer-actions.js'
 import { getSetKey, unsetKey } from '../actions/keys.js'
-// import { removeAllFavorites } from '../actions/favorites.js'
 import { unsetHistory } from '../actions/history.js'
 import { whichDir } from '../actions/directories.js'
-import mainMenu from './main-menu.js'
 
 export default async function configMenu () {
   const selection = (
@@ -15,15 +13,15 @@ export default async function configMenu () {
         message: 'select an option',
         choices: [
           {
-            value: 'changeAPIKey',
+            value: 'apiKey',
             name: 'change API Key'
           },
           {
-            value: 'changeDownloadsFolder',
+            value: 'destination',
             name: 'change downloads folder'
           },
           {
-            value: 'clearHistory',
+            value: 'unset',
             name: 'clear history'
           },
           {
@@ -36,34 +34,12 @@ export default async function configMenu () {
   ).selection
 
   const actions = {
-    async changeAPIKey () {
-      if (await checkConfirm()) {
-        unsetKey()
-        await getSetKey({
-          set: true
-        })
-      }
-    },
-    async changeDownloadsFolder () {
-      if (await checkConfirm()) {
-        await whichDir({
-          set: true
-        })
-      }
-    },
-    async clearHistory () {
-      if (await checkConfirm()) {
-        unsetHistory()
-      }
-    },
-    async back () {
-      await mainMenu()
-    }
+    apiKey: async () => await checkConfirm() &&
+      unsetKey() && await getSetKey({ set: true }),
+    destination: async () => await checkConfirm() && await whichDir({ set: true }),
+    unset: async () => await checkConfirm() && unsetHistory(),
+    back: () => 'exit'
   }
 
-  // TODO: refactor so menus aren't all importing main-menu.js
-  
-  await actions[selection]()
-  await checkRepeat(configMenu, mainMenu)
-  
+  await actions[selection]() !== 'exit' && await configMenu()
 }

@@ -1,5 +1,5 @@
 import inquirer from 'inquirer'
-import search from './search-menu.js'
+import searchMenu from './search-menu.js'
 // import historyMenu from './history-menu.js'
 import configMenu from './config-menu.js'
 
@@ -11,7 +11,7 @@ export default async function mainMenu () {
       message: 'select an option',
       choices: [
         {
-          value: 'searchMenu',
+          value: 'search',
           name: 'search for a username'
         },
         /*
@@ -21,7 +21,7 @@ export default async function mainMenu () {
         },
         */
         {
-          value: 'configMenu',
+          value: 'config',
           name: 'settings'
         },
         {
@@ -33,12 +33,15 @@ export default async function mainMenu () {
   ])
 
   const actions = {
-    async searchMenu () {
-      await search()
+    async search () {
+      await searchMenu()
       await mainMenu()
     },
     // historyMenu,
-    configMenu,
+    async config () {
+      await configMenu()
+      await mainMenu()
+    },
     exit () {
       console.log('goodbye')
       process.exit(0)
