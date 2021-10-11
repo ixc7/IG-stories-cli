@@ -1,5 +1,4 @@
 import { fork } from 'child_process'
-import search from './search.js'
 import download from './download.js'
 import { getSetKey } from '../actions/keys.js'
 import { whichDir, upsertDir } from '../actions/directories.js'
@@ -7,58 +6,42 @@ import display from '../actions/display.js'
 import readline from 'readline'
 
 const index = parseInt(process.argv[2])
+const env = JSON.parse(process.argv[3])
+const data = env.data
+const destination = env.destination
 
-// const init = async () => {
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+})
+  
+console.log(`downloading ${index + 1} of ${data.length}`)
 
-  console.log('checking env variables')
-  const apiKey = await getSetKey()
-  const destination = await whichDir({ username: 'alice' })
-  upsertDir(destination)
+download('alice', data[index], destination)
+.then((file) => {
+  console.log('rendering')
 
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
+  const render = fork(
+    new URL('./render.js', import.meta.url).pathname,
+    [file]
+  )
+
+  process.stdin.on('keypress', (k) => { 
+    render.send(k)
   })
 
-  console.log('searching')
-  search('alice', apiKey)
-  .then(async (data) => {
+  render.on('close', () => {
+    if(index === data.length - 1) {
+      process.send({ next: 'EXIT' })
+      process.exit(0)
+    } else {
+      process.send({ next: parseInt(index + 1)})
+      process.exit(0)
+    }
+  })
   
-    console.log(data, data[index], data.length)
-    
-    console.log('downloading')
-    
-    download('alice', data[index], destination)
-    .then((file) => {
-      console.log('rendering')
+})
 
-      const render = fork(
-        new URL('./render.js', import.meta.url).pathname,
-        [file]
-      )
-
-      process.stdin.on('keypress', (k) => { 
-        render.send(k)
-      })
-
-      render.on('close', () => {
-        console.log('parent exiting on render closed')
-        if(index === data.length - 1) {
-          process.send({ next: 'EXIT' })
-          process.exit(0)
-        } else {
-          process.send({ next: parseInt(index + 1)})
-          process.exit(0)
-        }
-      })
-      
-    })
-  })  
-  .catch((err) => console.log('GOT ERROR', err))
-  
-// }
-
-// init()
 
 // q listener - abort search/download, kill render, exit
 // n listener - abort download/rm file, kill render/rm file, continue
@@ -66,7 +49,7 @@ const index = parseInt(process.argv[2])
 // done, exit
 
 // TODO: try {} catch (e) {}
-//       const bobData = await search('bob', await getSetKey())
-//       console.log(bobData)
+//       const data = await search('username', await getSetKey())
+//       console.log(data)
 
 // TODO: fork from main menu, wait for exit, return to menu prompt

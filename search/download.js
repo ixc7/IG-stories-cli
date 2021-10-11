@@ -5,11 +5,11 @@ import utils from '../actions/utils.js'
 
 export default function download (username, item, dir) {
   return new Promise((resolve, reject) => {
-    const filePath = new URL(
+    const file = new URL(
       `${dir}/${utils.makeName(username, item.type)}`,
       import.meta.url
     ).pathname
-    const writeStream = fs.createWriteStream(filePath)
+    const writeStream = fs.createWriteStream(file)
     const req = https.request(item.url)
 
     req.on('response', (res) => {
@@ -17,7 +17,11 @@ export default function download (username, item, dir) {
       res.pipe(writeStream)
 
       res.on('end', () => {
-        resolve(filePath)
+        resolve(file)
+      })
+
+      res.on('error', (e) => {
+        reject(e)
       })
     })
 
