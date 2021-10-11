@@ -1,6 +1,6 @@
 import inquirer from 'inquirer'
-import searchMenu from './search-menu.js'
-import historyMenu from './history-menu.js'
+import search from './search-menu.js'
+// import historyMenu from './history-menu.js'
 import configMenu from './config-menu.js'
 
 export default async function mainMenu () {
@@ -14,10 +14,12 @@ export default async function mainMenu () {
           value: 'searchMenu',
           name: 'search for a username'
         },
+        /*
         {
           value: 'historyMenu',
           name: 'view downloads'
         },
+        */
         {
           value: 'configMenu',
           name: 'settings'
@@ -31,8 +33,11 @@ export default async function mainMenu () {
   ])
 
   const actions = {
-    searchMenu,
-    historyMenu,
+    async searchMenu () {
+      await search()
+      await mainMenu()
+    },
+    // historyMenu,
     configMenu,
     exit () {
       console.log('goodbye')
@@ -41,4 +46,5 @@ export default async function mainMenu () {
   }
 
   await actions[answers.selection]()
+  // mainMenu()
 }

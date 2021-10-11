@@ -61,6 +61,9 @@ export default async function configMenu () {
     }
   }
 
+  // TODO: refactor so menus aren't all importing main-menu.js
+  
   await actions[selection]()
   await checkRepeat(configMenu, mainMenu)
+  
 }

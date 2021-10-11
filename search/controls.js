@@ -5,10 +5,10 @@ import download from './download.js'
 async function controls () {
   const index = parseInt(process.argv[2])
   const env = JSON.parse(process.argv[3])
-  const { data, destination } = env
+  const { data, username, destination } = env
 
   console.log(`downloading ${index + 1} of ${data.length}`)
-  const file = await download('alice', data[index], destination)
+  const file = await download(username, data[index], destination)
 
   const rl = readline.createInterface({
     input: process.stdin,
