@@ -1,7 +1,6 @@
 import https from 'https'
 
 export default function search (username, apiKey) {
-  // ---- promisify
   return new Promise((resolve, reject) => {
     // ---- body
     const query = new URL('/clients/api/ig/ig_profile', 'https://instagram-bulk-profile-scrapper.p.rapidapi.com')
@@ -15,7 +14,6 @@ export default function search (username, apiKey) {
     req.setHeader('x-rapidapi-host', 'instagram-bulk-profile-scrapper.p.rapidapi.com')
     req.setHeader('x-rapidapi-key', apiKey)
 
-    // ---- handle response
     req.on('response', function (res) {
 
       // ---- capture response
@@ -31,7 +29,7 @@ export default function search (username, apiKey) {
         if (allMedia[0]?.story?.data?.length) {
           const files = allMedia[0].story.data.map(function (item) {
             let formatted = {}
-            // ---- is image
+            // ---- image
             if (item.media_type === 1) {
               formatted = {
                 url: item.image_versions2.candidates[0].url,
@@ -39,7 +37,7 @@ export default function search (username, apiKey) {
                 display: 'image'
               }
             }
-            // ---- is video
+            // ---- video
             else if (item.media_type === 2) {
               formatted = {
                 url: item.video_versions[0].url,
@@ -55,7 +53,6 @@ export default function search (username, apiKey) {
 
         // ---- exit if we didn't receive anything usable
         else {
-          // ---- done
           reject('nothing found')
         }
       })

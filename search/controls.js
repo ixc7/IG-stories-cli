@@ -1,55 +1,39 @@
 import { fork } from 'child_process'
-import download from './download.js'
-import { getSetKey } from '../actions/keys.js'
-import { whichDir, upsertDir } from '../actions/directories.js'
-import display from '../actions/display.js'
 import readline from 'readline'
+import download from './download.js'
 
-const index = parseInt(process.argv[2])
-const env = JSON.parse(process.argv[3])
-const data = env.data
-const destination = env.destination
+async function initControls () {
+  const index = parseInt(process.argv[2])
+  const env = JSON.parse(process.argv[3])
+  const { data, destination } = env
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-})
-  
-console.log(`downloading ${index + 1} of ${data.length}`)
+  console.log(`downloading ${index + 1} of ${data.length}`)
+  const file = await download('alice', data[index], destination)
 
-download('alice', data[index], destination)
-.then((file) => {
-  console.log('rendering')
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  })
 
   const render = fork(
     new URL('./render.js', import.meta.url).pathname,
     [file]
   )
 
-  process.stdin.on('keypress', (k) => { 
-    render.send(k)
+  process.stdin.on('keypress', (m) => { 
+    render.send(m)
   })
 
-  render.on('close', () => {
-    if(index === data.length - 1) {
+  render.on('close', (code) => {
+    if(index >= data.length - 1 || code === 1) {
       process.send({ next: 'EXIT' })
       process.exit(0)
     } else {
-      process.send({ next: parseInt(index + 1)})
+      process.send({ next: index + 1 })
       process.exit(0)
     }
   })
-  
-})
+}
 
+initControls()
 
-// q listener - abort search/download, kill render, exit
-// n listener - abort download/rm file, kill render/rm file, continue
-// y listener - kill render, continue
-// done, exit
-
-// TODO: try {} catch (e) {}
-//       const data = await search('username', await getSetKey())
-//       console.log(data)
-
-// TODO: fork from main menu, wait for exit, return to menu prompt
