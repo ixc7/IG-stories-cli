@@ -19,7 +19,7 @@ timg.on('close', () => {
   console.log('press any key to continue')
 })
 
-process.on('message', (m) => {
+process.on('message', m => {
   display.term.reset()
   if (m === 'q') {
     process.exit(1)

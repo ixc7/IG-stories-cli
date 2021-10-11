@@ -7,10 +7,16 @@ const getEnv = async () => {
   const apiKey = await getSetKey()
   const destination = await whichDir({ username: 'alice' })
   upsertDir(destination)
-  const data = await search('alice', apiKey)
-  return {
-    data,
-    destination
+  try {
+    const data = await search('alice', apiKey)
+    return {
+      data,
+      destination
+    }
+  }
+  catch (e) {
+    console.log(e)
+    process.exit(0)
   }
 }
 
@@ -19,7 +25,7 @@ const mainLoop = (index = 0, data) => {
     new URL('./controls.js', import.meta.url).pathname,
     [index, JSON.stringify(data)]
   )
-  controls.on('message', (m) => {
+  controls.on('message', m => {
     if (m.next === 'EXIT') {
       console.log('exit')
       process.exit(0)
@@ -31,5 +37,3 @@ const mainLoop = (index = 0, data) => {
 const run = async () => mainLoop(0, await getEnv())
 
 run()
-
-// export default init

@@ -2,7 +2,7 @@ import { fork } from 'child_process'
 import readline from 'readline'
 import download from './download.js'
 
-async function initControls () {
+async function controls () {
   const index = parseInt(process.argv[2])
   const env = JSON.parse(process.argv[3])
   const { data, destination } = env
@@ -20,11 +20,9 @@ async function initControls () {
     [file]
   )
 
-  process.stdin.on('keypress', (m) => { 
-    render.send(m)
-  })
+  process.stdin.on('keypress', m => render.send(m))
 
-  render.on('close', (code) => {
+  render.on('close', code => {
     if(index >= data.length - 1 || code === 1) {
       process.send({ next: 'EXIT' })
       process.exit(0)
@@ -35,5 +33,5 @@ async function initControls () {
   })
 }
 
-initControls()
+controls()
 

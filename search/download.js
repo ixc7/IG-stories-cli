@@ -9,20 +9,17 @@ export default function download (username, item, dir) {
       `${dir}/${utils.makeName(username, item.type)}`,
       import.meta.url
     ).pathname
+
     const writeStream = fs.createWriteStream(file)
     const req = https.request(item.url)
 
-    req.on('response', (res) => {
+    req.on('response', res => {
       display.progress(res)
       res.pipe(writeStream)
 
-      res.on('end', () => {
-        resolve(file)
-      })
+      res.on('end', () => resolve(file))
 
-      res.on('error', (e) => {
-        reject(e)
-      })
+      res.on('error', e => reject(e))
     })
 
     req.end()

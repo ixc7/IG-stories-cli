@@ -14,20 +14,20 @@ export default function search (username, apiKey) {
     req.setHeader('x-rapidapi-host', 'instagram-bulk-profile-scrapper.p.rapidapi.com')
     req.setHeader('x-rapidapi-key', apiKey)
 
-    req.on('response', function (res) {
+    req.on('response', res => {
 
       // ---- capture response
       let dataStr = ''
-      res.on('data', function (chunk) {
+      res.on('data', chunk => {
         dataStr += chunk.toString('utf8')
       })
 
-      res.on('end', function () {
+      res.on('end', () => {
         const allMedia = JSON.parse(dataStr, 0, 2)
         
         // ---- if we received a valid response, format it
         if (allMedia[0]?.story?.data?.length) {
-          const files = allMedia[0].story.data.map(function (item) {
+          const files = allMedia[0].story.data.map(item => {
             let formatted = {}
             // ---- image
             if (item.media_type === 1) {
