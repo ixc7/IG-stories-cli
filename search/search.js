@@ -56,6 +56,7 @@ export default function search (username, apiKey) {
           let msg = 'error'
           const err = Array.isArray(allMedia) ? allMedia[0] : allMedia
           if (err?.friendship_status?.is_private) msg = 'user is private'
+          else if (err?.story?.data?.length < 1) msg = 'no stories'
           else if (err?.message) msg = err.message
           reject(msg)
         }
