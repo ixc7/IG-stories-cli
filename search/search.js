@@ -1,6 +1,9 @@
 import https from 'https'
+import display from '../actions/display.js'
 
-export default function search (username, apiKey) {
+const search = (username, apiKey) => {
+  display.txt.center(`searching for ${username}`)
+
   return new Promise((resolve, reject) => {
     // ---- body
     const query = new URL('/clients/api/ig/ig_profile', 'https://instagram-bulk-profile-scrapper.p.rapidapi.com')
@@ -15,7 +18,6 @@ export default function search (username, apiKey) {
     req.setHeader('x-rapidapi-key', apiKey)
 
     req.on('response', res => {
-
       // ---- capture response
       let dataStr = ''
       res.on('data', chunk => {
@@ -24,7 +26,7 @@ export default function search (username, apiKey) {
 
       res.on('end', () => {
         const allMedia = JSON.parse(dataStr, 0, 2)
-        
+
         // ---- if we received a valid response, format it
         if (allMedia[0]?.story?.data?.length) {
           const files = allMedia[0].story.data.map(item => {
@@ -48,7 +50,7 @@ export default function search (username, apiKey) {
             return formatted
           })
           // ---- done
-          resolve(files)  
+          resolve(files)
         }
 
         // ---- exit if we didn't receive anything usable
@@ -58,6 +60,8 @@ export default function search (username, apiKey) {
           if (err?.friendship_status?.is_private) msg = 'user is private'
           else if (err?.story?.data?.length < 1) msg = 'no stories'
           else if (err?.message) msg = err.message
+
+          display.term.reset()
           reject(msg)
         }
       })
@@ -66,3 +70,5 @@ export default function search (username, apiKey) {
     req.end()
   })
 }
+
+export default search

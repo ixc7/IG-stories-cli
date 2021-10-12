@@ -11,7 +11,7 @@ module.exports = {
     sourceType: 'module'
   },
   rules: {
-    camelcase: 'off'
-  },
-  ignorePatterns: ["search/*"]
+    camelcase: 'off',
+    'brace-style': 'off'
+  }
 }

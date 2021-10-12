@@ -1,7 +1,10 @@
 import { fork } from 'child_process'
 import inquirer from 'inquirer'
+import display from '../actions/display.js'
 
 const searchMenu = async () => {
+  display.term.reset()
+
   const username = (await inquirer.prompt([
     {
       type: 'input',

@@ -1,6 +1,7 @@
 import inquirer from 'inquirer'
 import searchMenu from './search-menu.js'
 import configMenu from './config-menu.js'
+import display from '../actions/display.js'
 
 const mainMenu = async () => {
   const answers = await inquirer.prompt([
@@ -27,15 +28,18 @@ const mainMenu = async () => {
 
   const actions = {
     search: async () => {
+      display.term.reset()
       await searchMenu()
       await mainMenu()
     },
     config: async () => {
+      display.term.reset()
       await configMenu()
+      display.term.reset()
       await mainMenu()
     },
     exit: async () => {
-      console.log('goodbye')
+      display.txt.center('exit')
       process.exit(0)
     }
   }

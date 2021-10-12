@@ -16,12 +16,14 @@ const timg = spawn(
 timg.stdout.pipe(process.stdout)
 
 timg.on('close', () => {
-  console.log('press any key to continue')
+  /* eslint-disable-next-line quotes */
+  display.txt.center(`press any key to continue, 's' to delete, 'q' to quit`, { clear: false })
 })
 
 process.on('message', m => {
   display.term.reset()
   if (m === 'q') {
+    fs.rmSync(file)
     process.exit(1)
   }
   if (m === 's') {

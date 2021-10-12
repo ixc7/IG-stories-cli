@@ -4,6 +4,7 @@ import path from 'path'
 import inquirer from 'inquirer'
 import { execSync } from 'child_process'
 import utils from './utils.js'
+import display from './display.js'
 
 const { config } = utils
 
@@ -37,15 +38,13 @@ const setDir = async () => {
     2
   )
 
-  console.log(`set to ${destination}`)
+  display.txt.center(`set to ${destination}`)
   return destination
 }
 
-//  TODO: replace dirExists with dirStats
 //  TODO: don't use try/catch for control flow
 //        const exists = fs.existsSync()
 //        if (exists) { ... }
-
 // ----
 const dirStats = path => {
   try {
@@ -117,13 +116,5 @@ const whichDir = async (options = {}) => {
   if (options.username) return path.resolve(basePath, options.username)
   return basePath
 }
-
-/*
-(async function () {
-  await whichDir({ set: true })
-  console.log(await whichDir({ check: true }))
-  console.log(dirStats(await whichDir()))
-})()
-*/
 
 export { whichDir, openDir, rmDir, upsertDir, dirExists, dirStats }

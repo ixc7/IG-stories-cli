@@ -23,9 +23,9 @@ const term = {
 
 // ----
 const txt = {
-  center: (msg = '', x = stdout.columns, y = 0, clear = true) => {
-    if (clear) term.reset()
-    cursor.to(Math.floor((x / 2) - (msg.length / 2)), y)
+  center: (msg = '', opts = { clear: true }, pos = { x: stdout.columns, y: 0 }) => {
+    if (opts.clear) term.reset()
+    cursor.to(Math.floor((parseInt(pos.x) / 2) - (msg.length / 2)), parseInt(pos.y))
     stdin.write(`${msg}\n`)
   }
 }

@@ -1,16 +1,17 @@
 import { fork } from 'child_process'
 import readline from 'readline'
 import download from './download.js'
+import display from '../actions/display.js'
 
 const controls = async () => {
   const index = parseInt(process.argv[2])
   const env = JSON.parse(process.argv[3])
   const { data, username, destination } = env
 
-  console.log(`downloading ${index + 1} of ${data.length}`)
+  display.txt.center(`downloading ${index + 1} of ${data.length}`)
   const file = await download(username, data[index], destination)
 
-  const rl = readline.createInterface({
+  readline.createInterface({
     input: process.stdin,
     output: process.stdout
   })
@@ -34,4 +35,3 @@ const controls = async () => {
 }
 
 controls()
-

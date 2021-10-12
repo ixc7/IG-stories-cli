@@ -1,9 +1,10 @@
 import inquirer from 'inquirer'
 import { getSetKey, unsetKey } from '../actions/apiKeys.js'
 import { whichDir, rmDir } from '../actions/directories.js'
+import display from '../actions/display.js'
 
 async function checkConfirm (message = 'proceed?') {
-  return (
+  const selection = (
     await inquirer.prompt([
       {
         type: 'confirm',
@@ -12,6 +13,9 @@ async function checkConfirm (message = 'proceed?') {
       }
     ])
   ).checkConfirm
+
+  if (!selection) display.term.reset()
+  return selection
 }
 
 export default async function configMenu () {
@@ -48,9 +52,9 @@ export default async function configMenu () {
       if (await checkConfirm()) {
         if (await whichDir({ check: true })) {
           rmDir(await whichDir())
-          console.log('cleared')
+          display.txt.center('cleared')
         } else {
-          console.log('no downloads')
+          display.txt.center('no downloads')
         }
       }
     },
