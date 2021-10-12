@@ -2,7 +2,7 @@ import { fork } from 'child_process'
 import readline from 'readline'
 import download from './download.js'
 
-async function controls () {
+const controls = async () => {
   const index = parseInt(process.argv[2])
   const env = JSON.parse(process.argv[3])
   const { data, username, destination } = env
@@ -23,7 +23,7 @@ async function controls () {
   process.stdin.on('keypress', m => render.send(m))
 
   render.on('close', code => {
-    if(index >= data.length - 1 || code === 1) {
+    if (index >= data.length - 1 || code === 1) {
       process.send({ next: 'EXIT' })
       process.exit(0)
     } else {

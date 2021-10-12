@@ -7,20 +7,14 @@ import Progress from 'progress'
 
 // ----
 const cursor = {
-  hide () {
-    stdout.write('\u001b[?25l')
-  },
-  show () {
-    stdout.write('\u001b[?25h')
-  },
-  to (x, y) {
-    readline.cursorTo(stdout, x, y)
-  }
+  hide: () => stdout.write('\u001b[?25l'),
+  show: () => stdout.write('\u001b[?25h'),
+  to: (x, y) => readline.cursorTo(stdout, x, y)
 }
 
 // ----
 const term = {
-  reset () {
+  reset: () => {
     cursor.show()
     stdout.write('\u001b[0m\u001b[3J\u001b[1J')
     console.clear()
@@ -29,16 +23,15 @@ const term = {
 
 // ----
 const txt = {
-  center (msg = '', x = stdout.columns, y = 0, clear = true) {
+  center: (msg = '', x = stdout.columns, y = 0, clear = true) => {
     if (clear) term.reset()
-
     cursor.to(Math.floor((x / 2) - (msg.length / 2)), y)
     stdin.write(`${msg}\n`)
   }
 }
 
 // ----
-function progress (res) {
+const progress = res => {
   const total = parseInt(res.headers['content-length'], 10)
   const spacing = ' '.repeat(Math.floor(stdout.columns / 4))
 
@@ -51,9 +44,7 @@ function progress (res) {
     total
   })
 
-  res.on('data', function (chunk) {
-    bar.tick(chunk.length)
-  })
+  res.on('data', chunk => bar.tick(chunk.length))
 }
 
 export default {

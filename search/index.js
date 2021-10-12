@@ -1,17 +1,14 @@
 import { fork } from 'child_process'
-import { getSetKey } from '../actions/keys.js'
+import { getSetKey } from '../actions/apiKeys.js'
 import { whichDir, upsertDir } from '../actions/directories.js'
 import search from './search.js'
 
-// if called as fork from main-menu, use process.argv[2] for username
 const username = process.argv[2] || 'bob'
 
 const getEnv = async () => {
   const apiKey = await getSetKey()
   const destination = await whichDir({ username })
   upsertDir(destination)
-  
-  // get input here
   
   try {
     const data = await search(username, apiKey)

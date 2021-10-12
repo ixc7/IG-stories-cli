@@ -1,6 +1,6 @@
 import inquirer from 'inquirer'
 import utils from '../actions/utils.js'
-import { checkConfirm, checkRepeat } from '../actions/inquirer-actions.js'
+import { checkConfirm, checkRepeat } from './inquirer-actions.js'
 // import search from '../actions/search.js'
 import { whichDir, openDir, rmDir, dirExists, dirStats } from '../actions/directories.js'
 import mainMenu from './main-menu.js'
@@ -27,10 +27,12 @@ export default async function historyMenu () {
         name: 'selection',
         message: 'select an action',
         choices: [
-          // {
-            // value: 'getStories',
-            // name: 'get latest stories'
-          // },
+          /*
+          {
+            value: 'getStories',
+            name: 'get latest stories'
+          },
+          */
           {
             value: 'getDownloads',
             name: 'view downloaded stories'
@@ -50,20 +52,22 @@ export default async function historyMenu () {
     const { username, selection } = answers
 
     const actions = {
-      // async getStories () {
-        // await search(username)
-      // },
-      async getDownloads () {
+      /*
+      async getStories () {
+        await search(username)
+      },
+      */
+      getDownloads: async () => {
         const location = await whichDir({ username })
-        // ----
-        // if (dirExists(location)) {
+
+        // ---- if (dirExists(location)) {
         if (dirStats(location).valid) {
           openDir(location)
         } else {
           console.log('no downloads found')
         }
       },
-      async removeDownloads () {
+      removeDownloads: async () => {
         const location = await whichDir({ username })
         if (dirExists(location)) {
           if (await checkConfirm()) {
@@ -73,7 +77,7 @@ export default async function historyMenu () {
           console.log('no downloads found')
         }
       },
-      async back () {
+      back: async () => {
         await mainMenu()
       }
     }

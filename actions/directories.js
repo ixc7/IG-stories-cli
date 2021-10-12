@@ -8,14 +8,14 @@ import utils from './utils.js'
 const { config } = utils
 
 // ----
-async function setDir () {
+const setDir = async () => {
   const destination = (await inquirer.prompt([
     {
       type: 'input',
       name: 'destination',
       message: 'path',
       default: new URL('../DOWNLOADS', import.meta.url).pathname,
-      validate (input) {
+      validate: input => {
         if (typeof input === 'string' && !!input) return true
         return 'value cannot be empty'
       }
@@ -37,7 +37,7 @@ async function setDir () {
 }
 
 // ----
-async function whichDir (options = { username: false, set: false }) {
+const whichDir = async (options = { username: false, set: false }) => {
   const basePath = options.set || !config().destination
     ? await setDir()
     : config().destination
@@ -51,8 +51,7 @@ async function whichDir (options = { username: false, set: false }) {
 //        if (exists) { ... }
 
 // ----
-function dirStats (path) {
-  // const exists = fs.existsSync(path)
+const dirStats = path => {
   try {
     const dir = fs.readdirSync(path)
     const stats = {
@@ -82,7 +81,7 @@ function dirStats (path) {
 }
 
 // ----
-function upsertDir (location) {
+const upsertDir = location => {
   if (!dirStats(location).exists) {
     fs.mkdirSync(location, {
       recursive: true
@@ -91,19 +90,19 @@ function upsertDir (location) {
 }
 
 // ----
-function dirExists (location) {
+const dirExists = location => {
   const { exists, isFile } = dirStats(location).stats
   return exists && !isFile
 }
 
 // ----
-function openDir (location) {
+const openDir = location => {
   execSync(`open ${location}`)
 }
 
 // ----
-function rmDir (location) {
-  fs.readdirSync(location).forEach(function (file) {
+const rmDir = location => {
+  fs.readdirSync(location).forEach(file => {
     fs.rmSync(path.resolve(location, file))
   })
   fs.rmdirSync(location)

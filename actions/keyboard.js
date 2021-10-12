@@ -2,30 +2,28 @@ import { stdin, stdout } from 'process'
 import { spawn } from 'child_process'
 import readline from 'readline'
 
-function open () {
+const open = () => {
   readline.emitKeypressEvents(stdin)
   stdin.setRawMode(true)
 }
 
-function close () {
-  stdin.removeAllListeners('keypress')
-}
+const close = () => stdin.removeAllListeners('keypress')
 
-function reload () {
+const reload = () => {
   close()
   open()
 }
 
-function keyListener (actions = {}) {
-  stdin.on('keypress', (str) => {
+const keyListener = (actions = {}) => {
+  stdin.on('keypress', str => {
     if (Object.prototype.hasOwnProperty.call(actions, str)) actions[str]()
   })
 }
 
-function sigintListener (
+const sigintListener = (
   action = () => { process.exit(0) },
   str = 'q'
-) {
+) => {
   process.on('SIGINT', () => {
     const cleanup = spawn('tput', ['reset'])
     cleanup.stdout.pipe(stdout)

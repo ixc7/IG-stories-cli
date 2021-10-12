@@ -1,8 +1,7 @@
 import inquirer from 'inquirer'
-import { checkConfirm } from '../actions/inquirer-actions.js'
-import { getSetKey, unsetKey } from '../actions/keys.js'
+import { checkConfirm } from './inquirer-actions.js'
+import { getSetKey, unsetKey } from '../actions/apiKeys.js'
 import { whichDir } from '../actions/directories.js'
-// import { unsetHistory } from '../actions/history.js'
 
 export default async function configMenu () {
   const selection = (
@@ -22,16 +21,16 @@ export default async function configMenu () {
           },
 
           /*
+
             TODO: a) delete everything from destination folder
                   b) list destination contents, select items to delete
                   c) if nothing found exit
-          */
 
-          /*
             {
               value: 'unset',
               name: 'clear history'
             },
+
           */
 
           {

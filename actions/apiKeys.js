@@ -4,28 +4,23 @@ import utils from './utils.js'
 
 const { config } = utils
 
-// get/set API key
-async function getSetKey (
-  options = {
-    set: false
-  }
-) {
-  const newKey =
-    config().APIKey && !options.set
-      ? config().APIKey
-      : (
-          await inquirer.prompt([
-            {
-              type: 'input',
-              name: 'APIKey',
-              message: 'rapidAPI key',
-              validate (input) {
-                if (typeof input === 'string' && !!input) return true
-                return 'value cannot be empty'
-              }
+// ---- add key/return key from config.json
+const getSetKey = async (options = { set: false }) => {
+  const newKey = config().APIKey && !options.set
+    ? config().APIKey
+    : (
+        await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'APIKey',
+            message: 'rapidAPI key',
+            validate (input) {
+              if (typeof input === 'string' && !!input) return true
+              return 'value cannot be empty'
             }
-          ])
-        ).APIKey
+          }
+        ])
+      ).APIKey
 
   const updated = JSON.stringify(
     {
@@ -35,6 +30,7 @@ async function getSetKey (
     null,
     2
   )
+
   fs.writeFileSync(new URL('../config.json', import.meta.url).pathname, updated, {
     encoding: 'utf-8'
   })
@@ -42,8 +38,8 @@ async function getSetKey (
   return newKey
 }
 
-// unset API key
-function unsetKey () {
+// ---- delete line from config.json
+const unsetKey = () => {
   const updated = JSON.stringify(
     {
       ...config(),
