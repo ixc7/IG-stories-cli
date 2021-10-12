@@ -53,7 +53,11 @@ export default function search (username, apiKey) {
 
         // ---- exit if we didn't receive anything usable
         else {
-          reject('nothing found')
+          let msg = 'error'
+          const err = Array.isArray(allMedia) ? allMedia[0] : allMedia
+          if (err?.friendship_status?.is_private) msg = 'user is private'
+          else if (err?.message) msg = err.message
+          reject(msg)
         }
       })
     })

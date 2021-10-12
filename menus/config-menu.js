@@ -1,7 +1,18 @@
 import inquirer from 'inquirer'
-import { checkConfirm } from './inquirer-actions.js'
 import { getSetKey, unsetKey } from '../actions/apiKeys.js'
 import { whichDir, rmDir } from '../actions/directories.js'
+
+async function checkConfirm (message = 'proceed?') {
+  return (
+    await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'checkConfirm',
+        message
+      }
+    ])
+  ).checkConfirm
+}
 
 export default async function configMenu () {
   const selection = (

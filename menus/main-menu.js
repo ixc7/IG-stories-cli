@@ -1,6 +1,5 @@
 import inquirer from 'inquirer'
 import searchMenu from './search-menu.js'
-// import historyMenu from './history-menu.js'
 import configMenu from './config-menu.js'
 
 const mainMenu = async () => {
@@ -14,13 +13,6 @@ const mainMenu = async () => {
           value: 'search',
           name: 'search for a username'
         },
-        /*
-        TODO: ls dir + render previews
-        {
-          value: 'historyMenu',
-          name: 'view downloads'
-        },
-        */
         {
           value: 'config',
           name: 'settings'
@@ -34,7 +26,6 @@ const mainMenu = async () => {
   ])
 
   const actions = {
-    /* historyMenu: () => {}, */
     search: async () => {
       await searchMenu()
       await mainMenu()
