@@ -35,8 +35,6 @@ async function getSetKey (
     null,
     2
   )
-  // fs.readFileSync(new URL('../config.json', import.meta.url).pathname,
-  // fs.writeFileSync('config.json', updated, {
   fs.writeFileSync(new URL('../config.json', import.meta.url).pathname, updated, {
     encoding: 'utf-8'
   })
@@ -54,7 +52,6 @@ function unsetKey () {
     null,
     2
   )
-  // fs.writeFileSync('config.json', updated, {
   fs.writeFileSync(new URL('../config.json', import.meta.url).pathname, updated, {
     encoding: 'utf-8'
   })

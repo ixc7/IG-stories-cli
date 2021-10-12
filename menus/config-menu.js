@@ -1,8 +1,8 @@
 import inquirer from 'inquirer'
 import { checkConfirm } from '../actions/inquirer-actions.js'
 import { getSetKey, unsetKey } from '../actions/keys.js'
-import { unsetHistory } from '../actions/history.js'
 import { whichDir } from '../actions/directories.js'
+// import { unsetHistory } from '../actions/history.js'
 
 export default async function configMenu () {
   const selection = (
@@ -20,10 +20,20 @@ export default async function configMenu () {
             value: 'destination',
             name: 'change downloads folder'
           },
-          {
-            value: 'unset',
-            name: 'clear history'
-          },
+
+          /*
+            TODO: a) delete everything from destination folder
+                  b) list destination contents, select items to delete
+                  c) if nothing found exit
+          */
+
+          /*
+            {
+              value: 'unset',
+              name: 'clear history'
+            },
+          */
+
           {
             value: 'back',
             name: 'back'
@@ -34,12 +44,16 @@ export default async function configMenu () {
   ).selection
 
   const actions = {
-    apiKey: async () => await checkConfirm() &&
-      unsetKey() && await getSetKey({ set: true }),
+    apiKey: async () => {
+      if (await checkConfirm()) {
+        unsetKey()
+        await getSetKey({ set: true })
+      }
+    },
     destination: async () => await checkConfirm() && await whichDir({ set: true }),
-    unset: async () => await checkConfirm() && unsetHistory(),
-    back: () => 'exit'
+    // unset: async () => await checkConfirm() && unsetHistory(),
+    back: () => 'back'
   }
 
-  await actions[selection]() !== 'exit' && await configMenu()
+  await actions[selection]() !== 'back' && await configMenu()
 }
