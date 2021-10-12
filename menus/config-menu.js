@@ -1,7 +1,7 @@
 import inquirer from 'inquirer'
 import { checkConfirm } from './inquirer-actions.js'
 import { getSetKey, unsetKey } from '../actions/apiKeys.js'
-import { whichDir } from '../actions/directories.js'
+import { whichDir, rmDir } from '../actions/directories.js'
 
 export default async function configMenu () {
   const selection = (
@@ -19,20 +19,10 @@ export default async function configMenu () {
             value: 'destination',
             name: 'change downloads folder'
           },
-
-          /*
-
-            TODO: a) delete everything from destination folder
-                  b) list destination contents, select items to delete
-                  c) if nothing found exit
-
-            {
-              value: 'unset',
-              name: 'clear history'
-            },
-
-          */
-
+          {
+            value: 'unset',
+            name: 'clear all downloads'
+          },
           {
             value: 'back',
             name: 'back'
@@ -43,6 +33,16 @@ export default async function configMenu () {
   ).selection
 
   const actions = {
+    unset: async () => {
+      if (await checkConfirm()) {
+        if (await whichDir({ check: true })) {
+          rmDir(await whichDir())
+          console.log('cleared')
+        } else {
+          console.log('no downloads')
+        }
+      }
+    },
     apiKey: async () => {
       if (await checkConfirm()) {
         unsetKey()
@@ -50,7 +50,6 @@ export default async function configMenu () {
       }
     },
     destination: async () => await checkConfirm() && await whichDir({ set: true }),
-    // unset: async () => await checkConfirm() && unsetHistory(),
     back: () => 'back'
   }
 

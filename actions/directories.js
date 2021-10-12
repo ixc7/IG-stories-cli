@@ -9,18 +9,21 @@ const { config } = utils
 
 // ----
 const setDir = async () => {
-  const destination = (await inquirer.prompt([
+  const newDestination = (await inquirer.prompt([
     {
       type: 'input',
       name: 'destination',
       message: 'path',
-      default: new URL('../DOWNLOADS', import.meta.url).pathname,
+      default: 'downloads/',
       validate: input => {
-        if (typeof input === 'string' && !!input) return true
+        // -- TODO: rm whitespace then check
+        if (typeof input === 'string' && !!input.replace(/\s/g, '')) return true
         return 'value cannot be empty'
       }
     }
   ])).destination
+
+  const destination = path.resolve(path.resolve(), newDestination)
 
   fs.writeFileSync(
     new URL('../config.json', import.meta.url).pathname,
@@ -33,16 +36,9 @@ const setDir = async () => {
     },
     2
   )
-  return destination
-}
 
-// ----
-const whichDir = async (options = { username: false, set: false }) => {
-  const basePath = options.set || !config().destination
-    ? await setDir()
-    : config().destination
-  if (options.username) return path.resolve(basePath, options.username)
-  return basePath
+  console.log(`set to ${destination}`)
+  return destination
 }
 
 //  TODO: replace dirExists with dirStats
@@ -102,10 +98,32 @@ const openDir = location => {
 
 // ----
 const rmDir = location => {
-  fs.readdirSync(location).forEach(file => {
-    fs.rmSync(path.resolve(location, file))
-  })
-  fs.rmdirSync(location)
+  fs.rmSync(location, { recursive: true, force: true })
 }
+
+// ----
+const whichDir = async (options = {}) => {
+  if (options.check) {
+    try {
+      return !!config().destination && dirStats(config().destination).valid
+    }
+    catch (e) {
+      return false
+    }
+  }
+  const basePath = options.set || !config().destination
+    ? await setDir()
+    : config().destination
+  if (options.username) return path.resolve(basePath, options.username)
+  return basePath
+}
+
+/*
+(async function () {
+  await whichDir({ set: true })
+  console.log(await whichDir({ check: true }))
+  console.log(dirStats(await whichDir()))
+})()
+*/
 
 export { whichDir, openDir, rmDir, upsertDir, dirExists, dirStats }

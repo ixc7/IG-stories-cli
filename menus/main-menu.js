@@ -3,7 +3,7 @@ import searchMenu from './search-menu.js'
 // import historyMenu from './history-menu.js'
 import configMenu from './config-menu.js'
 
-export default async function mainMenu () {
+const mainMenu = async () => {
   const answers = await inquirer.prompt([
     {
       type: 'list',
@@ -15,6 +15,7 @@ export default async function mainMenu () {
           name: 'search for a username'
         },
         /*
+        TODO: ls dir + render previews
         {
           value: 'historyMenu',
           name: 'view downloads'
@@ -33,21 +34,22 @@ export default async function mainMenu () {
   ])
 
   const actions = {
-    async search () {
+    /* historyMenu: () => {}, */
+    search: async () => {
       await searchMenu()
       await mainMenu()
     },
-    // historyMenu,
-    async config () {
+    config: async () => {
       await configMenu()
       await mainMenu()
     },
-    exit () {
+    exit: async () => {
       console.log('goodbye')
       process.exit(0)
     }
   }
 
   await actions[answers.selection]()
-  // mainMenu()
 }
+
+export default mainMenu
