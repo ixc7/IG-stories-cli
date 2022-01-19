@@ -1,11 +1,9 @@
-import fs from 'fs'
+import { existsSync, readFileSync, writeFileSync } from 'fs'
 
 const config = () => {
-  return JSON.parse(
-    fs.readFileSync(new URL('../config.json', import.meta.url).pathname, {
-      encoding: 'utf-8'
-    })
-  )
+  const file = new URL('../config.json', import.meta.url).pathname
+  if (!existsSync(file)) writeFileSync(file, '{}')
+  return JSON.parse(readFileSync(file, { encoding: 'utf-8' }))
 }
 
 const makeName = (prefix = 'filename', extension = 'txt') => {

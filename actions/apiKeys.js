@@ -13,7 +13,7 @@ const getSetKey = async (options = { set: false }) => {
           {
             type: 'input',
             name: 'APIKey',
-            message: 'rapidAPI key',
+            message: 'API key:',
             validate (input) {
               if (typeof input === 'string' && !!input) return true
               return 'value cannot be empty'

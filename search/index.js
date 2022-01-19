@@ -5,10 +5,11 @@ import display from '../actions/display.js'
 import search from './search.js'
 
 const username = process.argv[2].replace(/\s/g, '') || false
+const { term, txt } = display
 
 if (!username) {
-  display.term.reset()
-  display.txt.center('username cannot be empty')
+  term.reset()
+  txt.center('username cannot be empty')
   process.exit(0)
 }
 
@@ -25,7 +26,7 @@ const getEnv = async () => {
       username
     }
   } catch (e) {
-    display.txt.center(e)
+    txt.center(e)
     process.exit(0)
   }
 }
@@ -37,7 +38,7 @@ const mainLoop = (index = 0, data) => {
   )
   controls.on('message', m => {
     if (m.next === 'EXIT') {
-      display.txt.center('exit')
+      txt.center('exit')
       process.exit(0)
     }
     mainLoop(m.next, data)
