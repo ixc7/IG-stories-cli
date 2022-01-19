@@ -19,7 +19,10 @@ async function checkConfirm (message = 'proceed?') {
   return selection
 }
 
+// TODO make a function so we're not rewriting this.
 async function APIMenu () {
+  display.term.reset()
+
   const selection = (
     await inquirer.prompt([{
       type: 'list',
@@ -33,11 +36,16 @@ async function APIMenu () {
         {
           value: 'help',
           name: 'help'
+        },
+        {
+          value: 'back',
+          name: 'back'
         }
       ]
     }])
   ).selection
-  
+
+  // TODO add back button
   const actions = {
     changeKey: async () => {
       if (await checkConfirm()) {
@@ -49,14 +57,12 @@ async function APIMenu () {
       return new Promise((resolve, reject) => {
 
         const helpTxt = `
-          here is the help text.
-          it will help you with getting your API key.
-          first, you go to rapid API .com
-          then you get your API key.
+          \rhere is the help text.
+          \rit will help you with getting your API key.
+          \rfirst, you go to rapid API dot com
+          \rthen you get your API key.
 
-
-
-          press <ENTER> to go back
+          \rpress <ENTER> to go back
         `
 
         const rl = createInterface({
@@ -66,47 +72,44 @@ async function APIMenu () {
 
         rl.on('line', () => {
           rl.close()
+          display.term.reset()
           resolve()
         })
       
         display.term.reset()
         console.log(helpTxt)
       })
-    }
+    },
+    back: () => 'back'
   }
 
-  await actions[selection]() && await configMenu()
+  // loop
+  await actions[selection]() !== 'back' && await APIMenu()
 }
 
-export default async function configMenu () {
-  const selection = (
-    await inquirer.prompt([
+async function downloadsMenu () {
+  display.term.reset()
+
+  const { selection } = await inquirer.prompt(
+  [{
+    type: 'list',
+    name: 'selection',
+    message: 'select an option',
+    choices: [
+       {
+        value: 'folder',
+        name: 'change downloads folder'
+      },
       {
-        type: 'list',
-        name: 'selection',
-        message: 'select an option',
-        choices: [
-          {
-            value: 'APIKeys',
-            // name: 'change API Key'
-            name: 'API Keys'
-          },
-          {
-            value: 'folder',
-            name: 'change downloads folder'
-          },
-          {
-            value: 'unset',
-            name: 'clear all downloads'
-          },
-          {
-            value: 'back',
-            name: 'back'
-          }
-        ]
+        value: 'unset',
+        name: 'clear all downloads'
+      },
+      {
+        value: 'back',
+        name: 'back'
       }
-    ])
-  ).selection
+    ]
+  }])
 
   const actions = {
     unset: async () => {
@@ -119,17 +122,78 @@ export default async function configMenu () {
         }
       }
     },
-    APIKeys: async () => {
-      await APIMenu()
-      // if (await checkConfirm()) {
-        // unsetKey()
-        // await getSetKey({ set: true })
-      // }
+    folder: async () => await checkConfirm() && await whichDir({ set: true }),
+    back: () => 'back'
+  }
+
+  await actions[selection]() !== 'back' && await downloadsMenu()
+}
+
+
+async function configMenu () {
+  display.term.reset()
+
+  const selection = (
+    await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'selection',
+        message: 'select an option',
+        choices: [
+          {
+            value: 'APIKeys',
+            name: 'API Keys'
+          },
+          
+          // TODO make submenu
+          // change folder, clear all (or username), open (or ls)
+          /*
+           {
+            value: 'folder',
+            name: 'change downloads folder'
+          },
+          {
+            value: 'unset',
+            name: 'clear all downloads'
+          },
+          */
+          
+          {
+            value: 'downloads',
+            name: 'downloads'
+          },
+          {
+            value: 'back',
+            name: 'back'
+          }
+        ]
+      }
+    ])
+  ).selection
+
+  const actions = {
+    APIKeys: async () => await APIMenu(),
+    
+    // TODO move me
+    /*
+    unset: async () => {
+      if (await checkConfirm()) {
+        if (await whichDir({ check: true })) {
+          rmDir(await whichDir())
+          display.txt.center('cleared')
+        } else {
+          display.txt.center('no downloads')
+        }
+      }
     },
     folder: async () => await checkConfirm() && await whichDir({ set: true }),
+    */
+    downloads: async () => await downloadsMenu(),
     back: () => 'back'
   }
 
   // loop
   await actions[selection]() !== 'back' && await configMenu()
 }
+
+export default configMenu
