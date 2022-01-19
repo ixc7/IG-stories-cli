@@ -19,8 +19,8 @@ const mainMenu = async () => {
           name: 'settings'
         },
         {
-          value: 'exit',
-          name: 'exit'
+          value: 'quit',
+          name: 'quit'
         }
       ]
     }
@@ -38,8 +38,9 @@ const mainMenu = async () => {
       display.term.reset()
       await mainMenu()
     },
-    exit: async () => {
-      display.txt.center('exit')
+    quit: async () => {
+      // display.txt.center('exit')
+      console.log('quit')
       process.exit(0)
     }
   }
