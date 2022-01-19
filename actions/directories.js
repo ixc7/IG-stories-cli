@@ -3,10 +3,8 @@ import fs from 'fs'
 import path from 'path'
 import inquirer from 'inquirer'
 import { execSync } from 'child_process'
-import utils from './utils.js'
+import { config } from './utils.js'
 import display from './display.js'
-
-const { config } = utils
 
 // ----
 const setDir = async () => {
@@ -14,8 +12,8 @@ const setDir = async () => {
     {
       type: 'input',
       name: 'destination',
-      message: 'path',
-      default: 'downloads/',
+      message: 'downloads folder',
+      default: './downloads/',
       validate: input => {
         // -- TODO: rm whitespace then check
         if (typeof input === 'string' && !!input.replace(/\s/g, '')) return true
@@ -38,7 +36,7 @@ const setDir = async () => {
     2
   )
 
-  display.txt.center(`set to ${destination}`)
+  display.txt.center(`downloads folder set to ${destination}`)
   return destination
 }
 
@@ -76,13 +74,7 @@ const dirStats = path => {
 }
 
 // ----
-const upsertDir = location => {
-  if (!dirStats(location).exists) {
-    fs.mkdirSync(location, {
-      recursive: true
-    })
-  }
-}
+const upsertDir = location => { if (!dirStats(location).exists) fs.mkdirSync(location, { recursive: true }) }
 
 // ----
 const dirExists = location => {
@@ -91,13 +83,11 @@ const dirExists = location => {
 }
 
 // ----
-const openDir = location => {
-  execSync(`open ${location}`)
-}
+const openDir = location => execSync(`open ${location}`)
 
 // ----
 const rmDir = location => {
-  fs.rmSync(location, { recursive: true, force: true })
+  return fs.rmSync(location, { recursive: true, force: true })
 }
 
 // ----

@@ -1,12 +1,12 @@
 import https from 'https'
 import fs from 'fs'
 import display from '../actions/display.js'
-import utils from '../actions/utils.js'
+import { makeName } from '../actions/utils.js'
 
 export default function download (username, item, dir) {
   return new Promise((resolve, reject) => {
     const file = new URL(
-      `${dir}/${utils.makeName(username, item.type)}`,
+      `${dir}/${makeName(username, item.type)}`,
       import.meta.url
     ).pathname
 

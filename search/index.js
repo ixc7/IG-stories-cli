@@ -1,6 +1,6 @@
 import { fork } from 'child_process'
 import { getSetKey } from '../actions/apiKeys.js'
-import { whichDir, upsertDir } from '../actions/directories.js'
+import { whichDir, upsertDir, rmDir } from '../actions/directories.js'
 import display from '../actions/display.js'
 import search from './search.js'
 
@@ -15,6 +15,8 @@ if (!username) {
 
 const getEnv = async () => {
   const apiKey = await getSetKey()
+
+  // if !existssync mkdirsync
   const destination = await whichDir({ username })
   upsertDir(destination)
 
@@ -26,7 +28,15 @@ const getEnv = async () => {
       username
     }
   } catch (e) {
-    txt.center(e)
+    rmDir(destination)
+
+    if ((e.toLowerCase()).includes('subscribed')) {
+      txt.center('error fetching data. please check your API key.')
+    } 
+    else {
+      txt.center(e)
+    }
+    // else if (e.msg) txt.center(e.msg)
     process.exit(0)
   }
 }

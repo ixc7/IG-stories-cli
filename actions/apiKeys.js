@@ -1,56 +1,33 @@
 import fs from 'fs'
 import inquirer from 'inquirer'
-import utils from './utils.js'
+import { config } from './utils.js'
+const file = new URL('../config.json', import.meta.url).pathname
 
-const { config } = utils
-
-// ---- add key/return key from config.json
+// ---- set/return key from file
 const getSetKey = async (options = { set: false }) => {
-  const newKey = config().APIKey && !options.set
+  const res = config().APIKey && !options.set
     ? config().APIKey
-    : (
-        await inquirer.prompt([
-          {
-            type: 'input',
-            name: 'APIKey',
-            message: 'API key:',
-            validate (input) {
-              if (typeof input === 'string' && !!input) return true
-              return 'value cannot be empty'
-            }
+    : (await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'APIKey',
+          message: 'API key:',
+          validate: input => {
+            if (typeof input === 'string' && !!input) return true
+            return 'API key cannot be empty'
           }
-        ])
-      ).APIKey
+        }
+      ])).APIKey
 
-  const updated = JSON.stringify(
-    {
-      ...config(),
-      APIKey: newKey
-    },
-    null,
-    2
-  )
-
-  fs.writeFileSync(new URL('../config.json', import.meta.url).pathname, updated, {
-    encoding: 'utf-8'
-  })
-
-  return newKey
+  const updated = JSON.stringify({ ...config(), APIKey: res }, 0, 2)
+  fs.writeFileSync(file, updated, { encoding: 'utf-8' })
+  return res
 }
 
-// ---- delete line from config.json
+// ---- delete key from file
 const unsetKey = () => {
-  const updated = JSON.stringify(
-    {
-      ...config(),
-      APIKey: ''
-    },
-    null,
-    2
-  )
-  fs.writeFileSync(new URL('../config.json', import.meta.url).pathname, updated, {
-    encoding: 'utf-8'
-  })
+  const updated = JSON.stringify({ ...config(), APIKey: '' }, 0, 2)
+  fs.writeFileSync(file, updated, { encoding: 'utf-8' })
 }
 
 export { getSetKey, unsetKey }

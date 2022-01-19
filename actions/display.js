@@ -7,8 +7,8 @@ import Progress from 'progress'
 
 // ----
 const cursor = {
-  hide: () => stdout.write('\u001b[?25l'),
-  show: () => stdout.write('\u001b[?25h'),
+  hide: () => stdout.write('\x1b[?25l'),
+  show: () => stdout.write('\x1b[?25h'),
   to: (x, y) => readline.cursorTo(stdout, x, y)
 }
 
@@ -16,7 +16,7 @@ const cursor = {
 const term = {
   reset: () => {
     cursor.show()
-    stdout.write('\u001b[0m\u001b[3J\u001b[1J')
+    stdout.write('\x1b[0m\x1b[3J\x1b[1J')
     console.clear()
   }
 }
@@ -38,7 +38,7 @@ const progress = res => {
   if (isNaN(total)) return false
 
   const bar = new Progress(`${spacing}[:bar]`, {
-    complete: '\u001b[102m \u001b[0m',
+    complete: '\x1b[102m \x1b[0m',
     incomplete: '_',
     width: Math.floor(stdout.columns / 2),
     total
