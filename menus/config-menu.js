@@ -1,29 +1,29 @@
 import { createInterface } from 'readline'
 import inquirer from 'inquirer'
+import { config } from '../actions/utils.js'
 import { getSetKey, unsetKey } from '../actions/apiKeys.js'
 import { whichDir, rmDir } from '../actions/directories.js'
 import display from '../actions/display.js'
+const { reset } = display.term
 
 async function checkConfirm (message = 'proceed?') {
-  const selection = (
+  const { confirm } = (
     await inquirer.prompt([
       {
         type: 'confirm',
-        name: 'checkConfirm',
+        name: 'confirm',
         message
       }
     ])
-  ).checkConfirm
-
-  if (!selection) display.term.reset()
-  return selection
+  )
+  if (!confirm) reset()
+  return confirm
 }
 
-// TODO make a function so we're not rewriting this.
 async function APIMenu () {
-  display.term.reset()
+  reset()
 
-  const selection = (
+  const { selection } = (
     await inquirer.prompt([{
       type: 'list',
       name: 'selection',
@@ -32,6 +32,10 @@ async function APIMenu () {
         {
           value: 'changeKey',
           name: 'change API key'
+        },
+        {
+         value: 'showKey',
+         name: 'view API key' 
         },
         {
           value: 'help',
@@ -43,15 +47,44 @@ async function APIMenu () {
         }
       ]
     }])
-  ).selection
+  )
 
-  // TODO add back button
   const actions = {
     changeKey: async () => {
       if (await checkConfirm()) {
         unsetKey()
         await getSetKey({ set: true })
       }
+    },
+    showKey: () => {
+      return new Promise((resolve, reject) => {
+        const rl = createInterface({
+          input: process.stdin,
+          output: process.stdout
+        })
+
+        rl.on('line', () => {
+          rl.close()
+          reset()
+          resolve()
+        })
+        
+        reset()
+        if (config().APIKey) {
+          console.log(`
+            \rKey: ${keyStr}
+          
+            \rpress <ENTER> to go back
+          `)
+        } else {
+          console.log(`
+            \rKey not found.
+            \rPlease set one from -> settings -> API Keys -> 'Change API Key'
+          
+            \rpress <ENTER> to go back
+          `)
+        }
+      })
     },
     help: () => {
       return new Promise((resolve, reject) => {
@@ -72,23 +105,22 @@ async function APIMenu () {
 
         rl.on('line', () => {
           rl.close()
-          display.term.reset()
+          reset()
           resolve()
         })
       
-        display.term.reset()
+        reset()
         console.log(helpTxt)
       })
     },
     back: () => 'back'
   }
 
-  // loop
   await actions[selection]() !== 'back' && await APIMenu()
 }
 
 async function downloadsMenu () {
-  display.term.reset()
+  reset()
 
   const { selection } = await inquirer.prompt(
   [{
@@ -131,9 +163,9 @@ async function downloadsMenu () {
 
 
 async function configMenu () {
-  display.term.reset()
+  reset()
 
-  const selection = (
+  const { selection } = (
     await inquirer.prompt([
       {
         type: 'list',
@@ -144,20 +176,6 @@ async function configMenu () {
             value: 'APIKeys',
             name: 'API Keys'
           },
-          
-          // TODO make submenu
-          // change folder, clear all (or username), open (or ls)
-          /*
-           {
-            value: 'folder',
-            name: 'change downloads folder'
-          },
-          {
-            value: 'unset',
-            name: 'clear all downloads'
-          },
-          */
-          
           {
             value: 'downloads',
             name: 'downloads'
@@ -169,30 +187,15 @@ async function configMenu () {
         ]
       }
     ])
-  ).selection
+  )
 
   const actions = {
     APIKeys: async () => await APIMenu(),
-    
-    // TODO move me
-    /*
-    unset: async () => {
-      if (await checkConfirm()) {
-        if (await whichDir({ check: true })) {
-          rmDir(await whichDir())
-          display.txt.center('cleared')
-        } else {
-          display.txt.center('no downloads')
-        }
-      }
-    },
-    folder: async () => await checkConfirm() && await whichDir({ set: true }),
-    */
     downloads: async () => await downloadsMenu(),
     back: () => 'back'
   }
-
-  // loop
+  
+  // loop self until back is selected
   await actions[selection]() !== 'back' && await configMenu()
 }
 
