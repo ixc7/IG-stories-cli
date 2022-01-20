@@ -72,7 +72,7 @@ async function APIMenu () {
         reset()
         if (config().APIKey) {
           console.log(`
-            \rKey: ${keyStr}
+            \rKey: ${config().APIKey}
           
             \rpress <ENTER> to go back
           `)
