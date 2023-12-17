@@ -30,13 +30,15 @@ const getEnv = async () => {
   } catch (e) {
     rmDir(destination)
 
-    if ((e.toLowerCase()).includes('subscribed')) {
-      txt.center('error fetching data. please check your API key.')
-    } 
-    else {
-      txt.center(e)
-    }
+    // if (e && typeof e === 'string' && (e.toLowerCase()).includes('subscribed')) {
+    // if (typeof e === 'string' && (e.toLowerCase()).includes('subscribed')) {
+      // txt.center('error fetching data. please check your API key.')
+    // }
+    // else {
+      // txt.center(e)
+    // }
     // else if (e.msg) txt.center(e.msg)
+    console.log(e)
     process.exit(0)
   }
 }

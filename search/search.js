@@ -56,14 +56,14 @@ const search = (username, apiKey) => {
         // ---- exit if we didn't receive anything usable
         else {
           const err = Array.isArray(allMedia) ? allMedia[0] : allMedia
-          
+
           let msg = 'error'
           if (err?.friendship_status?.is_private) msg = 'user is private'
           else if (err?.story?.data?.length < 1) msg = 'no stories found'
           else if (err?.message) msg = err.message
-          
+
           // display.term.reset()
-          reject(msg)
+          reject(err)
         }
       })
     })
